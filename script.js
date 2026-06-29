@@ -283,10 +283,6 @@ function renderMap() {
         <text x="${node.x}" y="${node.y - 5}" text-anchor="middle"
           dominant-baseline="central" font-size="26"
           style="pointer-events:none">${zone.icon}</text>
-        <text x="${node.x}" y="${node.y + 19}" text-anchor="middle"
-          font-family="'Fredoka One',cursive" font-size="13" fill="white"
-          paint-order="stroke" stroke="rgba(0,0,0,0.7)" stroke-width="3px"
-          style="pointer-events:none">Z${zone.id}</text>
         ${badge}
       </g>`;
   }).join('');
@@ -351,9 +347,9 @@ function handleZoneClick(zoneIdx) {
   const zone          = ZONES[zoneIdx];
   const targetCellIdx = ZONE_CELL_INDICES[zoneIdx];
 
-  // Si ya está ahí (zona completada o vuelta al mapa), no re-animar
+  // Si ya está ahí (zona completada o vuelta al mapa), jugar directo
   if (charCellIdx === targetCellIdx) {
-    showZonePlayPrompt(zone);
+    startZone(zone);
     return;
   }
 
@@ -367,8 +363,8 @@ function handleZoneClick(zoneIdx) {
   animateCellByCell(charCellIdx, targetCellIdx, () => {
     charCellIdx = targetCellIdx;
     if (svg) svg.style.pointerEvents = '';
-    // Llegó — mostrar botón de inicio
-    showZonePlayPrompt(zone);
+    // Llegó — jugar directamente
+    startZone(zone);
   });
 }
 
