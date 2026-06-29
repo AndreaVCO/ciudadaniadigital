@@ -58,7 +58,19 @@ function saveState() {
 function loadState() {
   try {
     const s = localStorage.getItem('cdState');
-    if (s) state = JSON.parse(s);
+    if (s) {
+      const p = JSON.parse(s);
+      // Reconstruimos el estado validando cada campo, así nunca se rompe
+      // si quedó guardada una versión anterior o incompleta en este navegador.
+      state = {
+        completed: Array.isArray(p.completed) ? p.completed : [],
+        scores: (p.scores && typeof p.scores === 'object') ? p.scores : {},
+        currentZone: p.currentZone || null,
+        gameScore: typeof p.gameScore === 'number' ? p.gameScore : 0,
+        totalScore: typeof p.totalScore === 'number' ? p.totalScore : 0,
+        feedbackQueue: Array.isArray(p.feedbackQueue) ? p.feedbackQueue : [],
+      };
+    }
   } catch(e){}
 }
 loadState();
