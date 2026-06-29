@@ -573,7 +573,7 @@ function startMemory() {
   const body = document.getElementById('game-body');
   body.innerHTML = `
     <div class="mem-instructions">
-      En internet, cada dato que compartes tiene un riesgo. Voltea las tarjetas y encuentra las parejas. <strong>¿Sabes qué puede pasar si no proteges tu información?</strong>
+      🌐 Ser ciudadano/a digital significa conocer los conceptos clave del mundo en línea. Voltea las tarjetas y une cada concepto con su definición. <strong>¿Sabes qué significa cada término de la ciudadanía digital?</strong>
     </div>
     <div class="memory-grid" id="mem-grid"></div>
     <div id="mem-match-info"></div>
