@@ -73,6 +73,12 @@ function showScreen(id) {
 function showMap() {
   renderMap();
   showScreen('screen-map');
+  // Si hay una zona recien completada, animar el personaje hasta ella
+  if (state.lastCompletedZoneIdx !== undefined && state.lastCompletedZoneIdx >= 0) {
+    const targetZoneIdx = state.lastCompletedZoneIdx;
+    state.lastCompletedZoneIdx = undefined;
+    setTimeout(() => animateCharacterToZone(targetZoneIdx, null), 350);
+  }
 }
 
 function showFinal() {
@@ -151,93 +157,187 @@ function restartGame() {
 }
 
 // =================== MAP RENDERING ===================
-// Posiciones de los 5 nodos sobre el tablero (viewBox 700x560), formando un camino en zigzag
-const BOARD_NODES = [
-  { x: 150, y: 150 },
-  { x: 330, y: 105 },
-  { x: 480, y: 175 },
-  { x: 320, y: 330 },
-  { x: 470, y: 460 },
-];
-const BOARD_START = { x: 70, y: 95 };
+// El mapa usa la imagen SPRITES__1_.png como fondo (1754x1240 px original)
+// Las coordenadas están en % del viewBox 1000x707 para que escalen bien
 
-function boardPathD() {
-  const pts = [BOARD_START, ...BOARD_NODES];
-  let d = `M ${pts[0].x} ${pts[0].y}`;
-  for (let i = 1; i < pts.length; i++) {
-    const prev = pts[i-1], cur = pts[i];
-    const mx = (prev.x + cur.x) / 2;
-    const my = (prev.y + cur.y) / 2;
-    // ligera curva alternando hacia arriba/abajo para que el camino serpentee
-    const bend = (i % 2 === 0) ? -28 : 28;
-    d += ` Q ${mx + bend} ${my} ${cur.x} ${cur.y}`;
-  }
-  return d;
+// Casillas blancas del camino (en orden desde INICIO hasta el cofre)
+// Coordenadas como porcentaje del ancho/alto de la imagen (0-1000 x 0-707)
+const PATH_CELLS = [
+  // Fila izquierda bajando desde INICIO
+  { x: 148, y: 202 }, // 0
+  { x: 100, y: 260 }, // 1
+  { x: 92,  y: 330 }, // 2 — ZONA 1 (rosa)
+  { x: 148, y: 390 }, // 3
+  // Giro hacia el centro
+  { x: 230, y: 390 }, // 4
+  { x: 300, y: 340 }, // 5
+  { x: 355, y: 280 }, // 6
+  { x: 408, y: 220 }, // 7
+  // Arriba centro
+  { x: 460, y: 168 }, // 8 — ZONA 2 (verde)
+  { x: 540, y: 168 }, // 9
+  { x: 618, y: 168 }, // 10
+  { x: 696, y: 178 }, // 11
+  { x: 760, y: 220 }, // 12
+  // Derecha bajando
+  { x: 800, y: 285 }, // 13
+  { x: 810, y: 355 }, // 14 — ZONA 3 (amarilla)
+  { x: 780, y: 420 }, // 15
+  { x: 720, y: 460 }, // 16
+  { x: 655, y: 480 }, // 17
+  { x: 588, y: 490 }, // 18
+  // Fila central bajando
+  { x: 520, y: 500 }, // 19
+  { x: 455, y: 500 }, // 20
+  { x: 395, y: 500 }, // 21
+  { x: 345, y: 530 }, // 22 — ZONA 4 (morada)
+  { x: 352, y: 595 }, // 23
+  { x: 415, y: 630 }, // 24
+  // Hacia el cofre
+  { x: 490, y: 635 }, // 25
+  { x: 570, y: 625 }, // 26
+  { x: 640, y: 610 }, // 27
+  { x: 710, y: 590 }, // 28
+  { x: 780, y: 575 }, // 29 — ZONA 5 (cofre)
+];
+
+// Las 5 zonas están en casillas específicas del camino
+const ZONE_CELL_INDICES = [2, 8, 14, 22, 29];
+
+// Posición INICIO
+const START_POS = { x: 192, y: 148 };
+
+// Personaje: empieza en INICIO y avanza a la casilla de la última zona completada
+let characterPos = { ...START_POS }; // posición actual en coords del viewBox
+
+function getCellPos(cellIdx) {
+  if (cellIdx < 0) return { ...START_POS };
+  return PATH_CELLS[Math.min(cellIdx, PATH_CELLS.length - 1)];
 }
 
-// Posiciones de los 5 nodos sobre la imagen mapa (en porcentaje del ancho/alto)
-// Detectadas visualmente sobre SPRITES.png (2000x1414)
-const MAP_NODES_PCT = [
-  { px: 53.5, py: 29.5 },  // Zona 1: casilla verde
-  { px: 12.5, py: 48.5 },  // Zona 2: casilla rosa
-  { px: 88.8, py: 45.0 },  // Zona 3: casilla amarilla
-  { px: 64.0, py: 67.6 },  // Zona 4: casilla beige
-  { px: 49.0, py: 87.0 },  // Zona 5: casilla roja
-];
+function getCharacterTargetCell() {
+  // El personaje está en la casilla de la última zona completada
+  // Si no hay zonas completadas, está en INICIO
+  let lastCompletedZoneCell = -1;
+  for (let zi = 0; zi < ZONES.length; zi++) {
+    if (state.completed.includes(ZONES[zi].id)) {
+      lastCompletedZoneCell = ZONE_CELL_INDICES[zi];
+    }
+  }
+  return lastCompletedZoneCell;
+}
 
 function renderMap() {
   const pct = (state.completed.length / ZONES.length) * 100;
   document.getElementById('main-progress').style.width = pct + '%';
 
-  const mapEl = document.getElementById('island-map');
-  const W = 700, H = 495; // ratio 2000/1414
+  const VW = 1000, VH = 707;
 
-  const nodesSvg = ZONES.map((zone, idx) => {
-    const isDone = state.completed.includes(zone.id);
-    const isAvailable = idx === 0 || state.completed.includes(ZONES[idx-1].id);
-    const isLocked = !isAvailable && !isDone;
-    const n = MAP_NODES_PCT[idx];
-    const cx = Math.round(n.px / 100 * W);
-    const cy = Math.round(n.py / 100 * H);
-    const r = 28;
+  // Construir SVG de casillas + personaje superpuesto sobre la imagen
+  // Casillas del camino
+  const cellsSvg = PATH_CELLS.map((cell, idx) => {
+    const zoneIdx = ZONE_CELL_INDICES.indexOf(idx);
+    const isZoneCell = zoneIdx >= 0;
 
-    const cls = 'board-node' + (isLocked ? ' locked' : '') + (isDone ? ' completed' : '');
-    const clickAttr = isLocked ? '' : `onclick="startZone(ZONES[${idx}])"`;
-    const onEnter = `onmouseenter="showZoneDetail(${idx})"`;
+    if (isZoneCell) {
+      const zone = ZONES[zoneIdx];
+      const isDone = state.completed.includes(zone.id);
+      const isAvailable = zoneIdx === 0 || state.completed.includes(ZONES[zoneIdx - 1].id);
+      const isLocked = !isAvailable && !isDone;
+      const zoneColors = ['#e91e8c', '#2e7d32', '#f9a825', '#7b1fa2', '#8B4513'];
+      const color = zoneColors[zoneIdx];
 
-    let badge = '';
-    if (isDone) {
-      badge = `<circle class="board-node-badge-bg board-node-check-bg" cx="${cx+20}" cy="${cy-20}" r="10"/>
-               <text class="board-node-badge" x="${cx+20}" y="${cy-19}" fill="white">✓</text>`;
-    } else if (isLocked) {
-      badge = `<circle class="board-node-badge-bg board-node-lock-bg" cx="${cx+20}" cy="${cy-20}" r="10"/>
-               <text class="board-node-badge" x="${cx+20}" y="${cy-19}" fill="white">🔒</text>`;
+      let badge = '';
+      if (isDone) {
+        badge = `<circle cx="${cell.x + 22}" cy="${cell.y - 22}" r="13" fill="#27ae60" stroke="white" stroke-width="2.5"/>
+                 <text x="${cell.x + 22}" y="${cell.y - 18}" text-anchor="middle" font-size="14" fill="white">✓</text>`;
+      } else if (isLocked) {
+        badge = `<circle cx="${cell.x + 22}" cy="${cell.y - 22}" r="13" fill="rgba(0,0,0,0.4)" stroke="white" stroke-width="2.5"/>
+                 <text x="${cell.x + 22}" y="${cell.y - 18}" text-anchor="middle" font-size="12" fill="white">🔒</text>`;
+      }
+
+      const clickAttr = isLocked ? '' : `onclick="startZone(ZONES[${zoneIdx}])" style="cursor:pointer"`;
+      const hoverAttr = `onmouseenter="showZoneDetail(${zoneIdx})"`;
+
+      return `
+        <g ${clickAttr} ${hoverAttr} class="zone-cell-group">
+          <ellipse cx="${cell.x}" cy="${cell.y}" rx="42" ry="36"
+            fill="${color}" opacity="${isLocked ? 0.45 : 0.92}"
+            stroke="white" stroke-width="${isDone ? 4 : 2.5}"
+            ${!isLocked ? 'class="zone-pulse"' : ''}/>
+          <text x="${cell.x}" y="${cell.y - 6}" text-anchor="middle" dominant-baseline="central"
+            font-size="22" style="pointer-events:none">${zone.icon}</text>
+          <text x="${cell.x}" y="${cell.y + 18}" text-anchor="middle"
+            font-family="'Fredoka One',cursive" font-size="11" fill="white"
+            paint-order="stroke" stroke="rgba(0,0,0,0.7)" stroke-width="3px"
+            style="pointer-events:none">Z${zone.id}</text>
+          ${badge}
+        </g>`;
+    } else {
+      // Casilla blanca del camino (decorativa, no clicable)
+      return `<ellipse cx="${cell.x}" cy="${cell.y}" rx="28" ry="24"
+        fill="white" opacity="0.18" stroke="white" stroke-width="1" stroke-opacity="0.35"/>`;
     }
-
-    const nodeColor = isDone ? '#27ae60' : isLocked ? 'rgba(255,255,255,0.45)' : 'white';
-    const strokeColor = isDone ? '#f0b429' : isLocked ? 'rgba(0,0,0,0.2)' : zone.color;
-    const strokeW = isDone ? 4 : 2;
-
-    return `
-      <g class="${cls}" ${clickAttr} ${onEnter} tabindex="0" role="button" aria-label="${zone.title}">
-        <circle cx="${cx}" cy="${cy}" r="${r}" fill="${nodeColor}" stroke="${strokeColor}" stroke-width="${strokeW}" class="board-node-circle"/>
-        <text class="board-node-icon" x="${cx}" y="${cy+1}" style="font-size:1.3rem">${zone.icon}</text>
-        ${badge}
-        <text class="board-node-label" x="${cx}" y="${cy + r + 14}">Zona ${zone.id}</text>
-      </g>`;
   }).join('');
 
+  // Personaje 📱 con carita
+  const targetCellIdx = getCharacterTargetCell();
+  const tPos = targetCellIdx < 0 ? START_POS : getCellPos(targetCellIdx);
+
+  const charSvg = `
+    <g id="map-character" style="transition: transform 0.9s cubic-bezier(.34,1.4,.5,1)"
+       transform="translate(${tPos.x}, ${tPos.y - 48})">
+      <!-- Sombra -->
+      <ellipse cx="0" cy="48" rx="22" ry="7" fill="rgba(0,0,0,0.25)"/>
+      <!-- Cuerpo del celular -->
+      <rect x="-16" y="0" width="32" height="44" rx="6" fill="#1a1a2e" stroke="#4fc3f7" stroke-width="2.5"/>
+      <!-- Pantalla -->
+      <rect x="-11" y="5" width="22" height="30" rx="3" fill="#e3f2fd"/>
+      <!-- Carita en pantalla -->
+      <!-- Ojos -->
+      <circle cx="-4" cy="14" r="3" fill="#1a1a2e"/>
+      <circle cx="4"  cy="14" r="3" fill="#1a1a2e"/>
+      <!-- Brillo ojos -->
+      <circle cx="-3" cy="13" r="1" fill="white"/>
+      <circle cx="5"  cy="13" r="1" fill="white"/>
+      <!-- Sonrisa -->
+      <path d="M -5,22 Q 0,27 5,22" stroke="#1a1a2e" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- Botón home -->
+      <circle cx="0" cy="41" r="3" fill="#37474f" stroke="#546e7a" stroke-width="1"/>
+      <!-- Camara -->
+      <circle cx="0" cy="2.5" r="1.5" fill="#37474f"/>
+      <!-- Bounce animation indicator -->
+      <animateTransform attributeName="transform" type="translate"
+        values="0,0; 0,-4; 0,0" dur="2s" repeatCount="indefinite"
+        additive="sum"/>
+    </g>`;
+
+  const mapEl = document.getElementById('island-map');
   mapEl.innerHTML = `
-    <svg class="board-svg" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"
-         role="img" aria-label="Mapa de la Isla del Tesoro">
-      <image href="mapa.png" x="0" y="0" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice"/>
-      ${nodesSvg}
-    </svg>
+    <div class="map-img-wrap" style="position:relative; width:100%; display:block;">
+      <img src="SPRITES__1_.png" alt="Mapa del Tesoro" style="display:block; width:100%; height:auto; border-radius:18px 18px 0 0;"/>
+      <svg class="map-overlay-svg" viewBox="0 0 ${VW} ${VH}"
+           xmlns="http://www.w3.org/2000/svg"
+           style="position:absolute; inset:0; width:100%; height:100%; pointer-events:none;">
+        <style>
+          .zone-cell-group { pointer-events: all; }
+          .zone-pulse { animation: zonePulse 2.2s ease-in-out infinite; }
+          @keyframes zonePulse {
+            0%,100% { filter: drop-shadow(0 0 4px rgba(255,255,255,0.5)); }
+            50% { filter: drop-shadow(0 0 12px rgba(255,255,255,0.95)); }
+          }
+        </style>
+        ${cellsSvg}
+        ${charSvg}
+      </svg>
+    </div>
+    <div class="board-legend" id="zone-detail">
+      <p>Toca una zona de color para empezar 🧭</p>
+    </div>
   `;
 
   showZoneDetail(firstActionableZoneIdx());
 }
-
 
 function firstActionableZoneIdx() {
   for (let idx = 0; idx < ZONES.length; idx++) {
@@ -245,6 +345,31 @@ function firstActionableZoneIdx() {
   }
   return ZONES.length - 1;
 }
+
+function animateCharacterToZone(zoneIdx, callback) {
+  // Mueve el personaje casilla por casilla hasta la zona objetivo
+  const targetCellIdx = ZONE_CELL_INDICES[zoneIdx];
+  const startCellIdx = getCharacterTargetCell();
+  const startIdx = startCellIdx < 0 ? -1 : startCellIdx;
+
+  const char = document.getElementById('map-character');
+  if (!char) { if (callback) callback(); return; }
+
+  let currentStep = startIdx;
+  function moveNext() {
+    currentStep++;
+    if (currentStep > targetCellIdx) {
+      if (callback) callback();
+      return;
+    }
+    const pos = getCellPos(currentStep);
+    char.style.transition = 'transform 0.35s cubic-bezier(.34,1.2,.5,1)';
+    char.setAttribute('transform', `translate(${pos.x}, ${pos.y - 48})`);
+    setTimeout(moveNext, 380);
+  }
+  moveNext();
+}
+
 
 function showZoneDetail(idx) {
   const zone = ZONES[idx];
@@ -259,11 +384,10 @@ function showZoneDetail(idx) {
   } else if (isLocked) {
     statusLine = '🔒 Completa la zona anterior para desbloquear';
   } else {
-    statusLine = '👉 Toca la casilla para jugar';
+    statusLine = '👉 Toca la zona para jugar';
   }
   detail.innerHTML = `<p><strong>${zone.icon} ${zone.title}</strong> — ${zone.subtitle}<br>${statusLine}</p>`;
 }
-
 // =================== FEEDBACK ===================
 let feedbackCallback = null;
 function showFeedback(isCorrect, article, explanation, cb) {
@@ -317,6 +441,8 @@ function completeZone(maxScore) {
   if (!state.completed.includes(zone.id)) state.completed.push(zone.id);
   state.scores[zone.id] = { earned: state.gameScore, max: maxScore };
   saveState();
+  // Guardar el índice de zona para animar el personaje al volver al mapa
+  state.lastCompletedZoneIdx = ZONES.findIndex(z => z.id === zone.id);
   renderProtocol(zone);
 }
 
@@ -463,51 +589,28 @@ function pickRandom(pool, n) {
 // ===== ZONA 1: MEMORIA ======================
 // =============================================
 const MEMORY_PAIRS = [
-  {
-    term: "🌐\nCiudadanía digital",
-    def: "🗳️\nEjercicio crítico y responsable de tus derechos en el entorno digital",
-    article: "AGESIC (2024): la ciudadanía digital es el ejercicio práctico y crítico de la ciudadanía en el entorno digital, reconociendo derechos y responsabilidades. En Ecuador, la Constitución Art. 16 garantiza el acceso universal a las tecnologías de información."
-  },
-  {
-    term: "👣\nHuella digital",
-    def: "🔍\nTodo rastro que dejas al navegar, publicar o registrarte en internet",
-    article: "LOPDP, Art. 7 – Autodeterminación informativa: tienes derecho a saber qué datos tuyos existen en línea y a controlar cómo se usan. Tu huella digital te pertenece."
-  },
-  {
-    term: "🧠\nAlfabetización digital",
-    def: "📋\nSaber gestionar tu información personal y mantenerte seguro/a en línea",
-    article: "Smowl Tech (2023): la ciudadanía digital implica la capacidad para evaluar críticamente la información en línea y la comprensión de los derechos y responsabilidades digitales."
-  },
-  {
-    term: "🌍\nDesterritorialización",
-    def: "🤝\nPuedes participar y colaborar con personas de cualquier lugar del mundo",
-    article: "Venegas (2020): la expansión de lo virtual genera comunidades digitales que trascienden fronteras físicas, ampliando las posibilidades de participación ciudadana global."
-  },
-  {
-    term: "🔒\nAutodeterminación informativa",
-    def: "✋\nTú decides qué datos personales compartes y con quién",
-    article: "LOPDP, Art. 7 y Constitución del Ecuador, Art. 66 num. 19: tienes derecho a decidir sobre el uso de tus datos personales. Nadie puede usarlos sin tu consentimiento."
-  },
-  {
-    term: "🤖\nEntorno digital",
-    def: "💻\nConjunto de tecnologías, plataformas y redes donde interactuamos en línea",
-    article: "El entorno digital abarca internet, dispositivos electrónicos, redes sociales y plataformas de servicios. Es el espacio donde se ejerce la ciudadanía digital (Lectura Complementaria, Tema 4)."
-  },
-  {
-    term: "📡\nBrecha digital",
-    def: "🚧\nDesigualdad entre quienes tienen acceso a tecnología y quienes no",
-    article: "Claro et al. (2021): la brecha digital refuerza líneas de exclusión social. En Ecuador, la Constitución Art. 16 reconoce el acceso a las TIC como un derecho para reducir esta brecha."
-  },
-  {
-    term: "👁️\nCapitalismo de vigilancia",
-    def: "📊\nModelo en que empresas recopilan tus datos para obtener ganancias",
-    article: "LOPDP, Art. 4 y 10 – Principio de finalidad: las plataformas no pueden usar tus datos para fines distintos a los que declararon. Tienes derecho a saber cómo monetizan tu información."
-  },
-  {
-    term: "⚖️\nDerechos digitales",
-    def: "🛡️\nLibertades y protecciones que tienes como persona en el entorno digital",
-    article: "Constitución del Ecuador, Art. 66 num. 19 y 20, y LOPDP: tus derechos digitales incluyen privacidad, protección de datos, acceso a información y no discriminación en línea."
-  },
+  { term: "📍 Comparto mi ubicación en una historia", def: "⚠️ Un desconocido puede saber dónde estoy",
+    article: "LOPDP, Art. 10 – Principio de seguridad: tu ubicación es un dato sensible. Compartirla sin cuidado puede exponerte a situaciones de riesgo real." },
+  { term: "🤳 Publico una foto mía sin revisar la privacidad", def: "⚠️ Esa imagen puede quedarse en internet para siempre",
+    article: "Art. 178 COIP – Violación a la intimidad: publicar imágenes propias o ajenas sin consentimiento puede tener consecuencias legales y personales permanentes." },
+  { term: "🔐 Uso la misma contraseña para todo", def: "⚠️ Si hackean una cuenta, pierdo el acceso a todas",
+    article: "Art. 66, numeral 19 de la Constitución del Ecuador: tus datos están protegidos. Una contraseña robada puede derivar en suplantación de identidad (Art. 212 COIP)." },
+  { term: "📱 Doy mi número a alguien que conocí en línea", def: "⚠️ Pueden contactarme sin mi permiso o acosarme",
+    article: "LOPDP, Art. 10 – Principio de confidencialidad: tu número de teléfono es un dato personal. Compartirlo sin control puede exponerte a acoso o fraude." },
+  { term: "📧 Uso mi correo personal para registrarme en todo", def: "⚠️ Mi identidad puede ser suplantada o mi cuenta robada",
+    article: "Art. 212 COIP – Suplantación de identidad: usar el correo de otra persona para hacerse pasar por ella es un delito penado en Ecuador." },
+  { term: "💬 Comparto información personal en un chat grupal", def: "⚠️ No sabes quién más puede ver o usar esa información",
+    article: "LOPDP, Art. 10 – Principio de consentimiento: antes de compartir información personal en línea, piensa en las consecuencias. La ley te da el derecho a decidir." },
+  { term: "🌐 Acepto solicitudes de amistad de gente que no conozco", def: "⚠️ Le doy acceso a mi información a un extraño",
+    article: "LOPDP, Art. 7 – Autodeterminación informativa: decidir quién ve tu información es un derecho. Aceptar desconocidos amplía quién puede acceder a tus datos." },
+  { term: "🎮 Descargo apps o juegos piratas sin revisar su origen", def: "⚠️ Pueden tener virus y robar mis datos sin que lo note",
+    article: "Art. 234 COIP – Ataques a la integridad de sistemas informáticos: muchas apps no oficiales distribuyen programas maliciosos que comprometen tu información." },
+  { term: "🕵️ Reviso el celular de mi pareja o amigo/a sin permiso", def: "⚠️ Estoy violando su privacidad aunque confíe en mí",
+    article: "Constitución del Ecuador, Art. 66 num. 21: el secreto de las comunicaciones es un derecho. Ninguna relación de confianza lo anula." },
+  { term: "🎥 Grabo a alguien sin que lo sepa y lo subo a redes", def: "⚠️ Puede ser un delito aunque diga que es 'broma'",
+    article: "Art. 178 COIP – Violación a la intimidad: grabar o difundir a una persona sin su consentimiento está sancionado, sin importar la intención." },
+  { term: "🛒 Comparto los datos de la tarjeta de mis padres para comprar en línea", def: "⚠️ Pueden robar el dinero o usar esos datos sin autorización",
+    article: "Art. 190 COIP – Apropiación fraudulenta por medios electrónicos: compartir datos financieros, incluso sin mala intención, abre la puerta a un fraude." },
 ];
 
 let memFlipped = [];
@@ -518,7 +621,7 @@ let memPlayCount = 0;
 
 function startMemory() {
   memFlipped = []; memMatched = []; memLocked = false; memCards = [];
-  const pairs = pickRandom(MEMORY_PAIRS, 6); // 6 pares al azar del banco de 9
+  const pairs = pickRandom(MEMORY_PAIRS, 6);
   memPlayCount = pairs.length;
   const items = [];
   pairs.forEach((p, i) => {
@@ -535,7 +638,7 @@ function startMemory() {
   const body = document.getElementById('game-body');
   body.innerHTML = `
     <div class="mem-instructions">
-      🌐 Ser ciudadano/a digital significa conocer los conceptos clave del mundo en línea. Voltea las tarjetas y une cada concepto con su definición. <strong>¿Sabes qué significa cada término de la ciudadanía digital?</strong>
+      En internet, cada dato que compartes tiene un riesgo. Voltea las tarjetas y encuentra las parejas. <strong>¿Sabes qué puede pasar si no proteges tu información?</strong>
     </div>
     <div class="memory-grid" id="mem-grid"></div>
     <div id="mem-match-info"></div>
@@ -554,10 +657,7 @@ function renderMemGrid() {
     el.style.position = 'relative';
     el.innerHTML = `
       <div class="mem-card-front">❓</div>
-      <div class="mem-card-back" style="font-size:0.78rem;text-align:center;padding:8px 4px;line-height:1.4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
-        <span style="font-size:2.2rem;line-height:1">${card.text.split('\n')[0]}</span>
-        <span style="font-size:0.72rem;line-height:1.35">${card.text.split('\n')[1] || ''}</span>
-      </div>
+      <div class="mem-card-back" style="font-size:0.72rem;text-align:center;padding:6px;line-height:1.3">${card.text}</div>
     `;
     if (!isMatched) el.onclick = () => flipMemCard(idx);
     grid.appendChild(el);
