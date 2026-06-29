@@ -501,28 +501,51 @@ function pickRandom(pool, n) {
 // ===== ZONA 1: MEMORIA ======================
 // =============================================
 const MEMORY_PAIRS = [
-  { term: "📍 Comparto mi ubicación en una historia", def: "⚠️ Un desconocido puede saber dónde estoy",
-    article: "LOPDP, Art. 10 – Principio de seguridad: tu ubicación es un dato sensible. Compartirla sin cuidado puede exponerte a situaciones de riesgo real." },
-  { term: "🤳 Publico una foto mía sin revisar la privacidad", def: "⚠️ Esa imagen puede quedarse en internet para siempre",
-    article: "Art. 178 COIP – Violación a la intimidad: publicar imágenes propias o ajenas sin consentimiento puede tener consecuencias legales y personales permanentes." },
-  { term: "🔐 Uso la misma contraseña para todo", def: "⚠️ Si hackean una cuenta, pierdo el acceso a todas",
-    article: "Art. 66, numeral 19 de la Constitución del Ecuador: tus datos están protegidos. Una contraseña robada puede derivar en suplantación de identidad (Art. 212 COIP)." },
-  { term: "📱 Doy mi número a alguien que conocí en línea", def: "⚠️ Pueden contactarme sin mi permiso o acosarme",
-    article: "LOPDP, Art. 10 – Principio de confidencialidad: tu número de teléfono es un dato personal. Compartirlo sin control puede exponerte a acoso o fraude." },
-  { term: "📧 Uso mi correo personal para registrarme en todo", def: "⚠️ Mi identidad puede ser suplantada o mi cuenta robada",
-    article: "Art. 212 COIP – Suplantación de identidad: usar el correo de otra persona para hacerse pasar por ella es un delito penado en Ecuador." },
-  { term: "💬 Comparto información personal en un chat grupal", def: "⚠️ No sabes quién más puede ver o usar esa información",
-    article: "LOPDP, Art. 10 – Principio de consentimiento: antes de compartir información personal en línea, piensa en las consecuencias. La ley te da el derecho a decidir." },
-  { term: "🌐 Acepto solicitudes de amistad de gente que no conozco", def: "⚠️ Le doy acceso a mi información a un extraño",
-    article: "LOPDP, Art. 7 – Autodeterminación informativa: decidir quién ve tu información es un derecho. Aceptar desconocidos amplía quién puede acceder a tus datos." },
-  { term: "🎮 Descargo apps o juegos piratas sin revisar su origen", def: "⚠️ Pueden tener virus y robar mis datos sin que lo note",
-    article: "Art. 234 COIP – Ataques a la integridad de sistemas informáticos: muchas apps no oficiales distribuyen programas maliciosos que comprometen tu información." },
-  { term: "🕵️ Reviso el celular de mi pareja o amigo/a sin permiso", def: "⚠️ Estoy violando su privacidad aunque confíe en mí",
-    article: "Constitución del Ecuador, Art. 66 num. 21: el secreto de las comunicaciones es un derecho. Ninguna relación de confianza lo anula." },
-  { term: "🎥 Grabo a alguien sin que lo sepa y lo subo a redes", def: "⚠️ Puede ser un delito aunque diga que es 'broma'",
-    article: "Art. 178 COIP – Violación a la intimidad: grabar o difundir a una persona sin su consentimiento está sancionado, sin importar la intención." },
-  { term: "🛒 Comparto los datos de la tarjeta de mis padres para comprar en línea", def: "⚠️ Pueden robar el dinero o usar esos datos sin autorización",
-    article: "Art. 190 COIP – Apropiación fraudulenta por medios electrónicos: compartir datos financieros, incluso sin mala intención, abre la puerta a un fraude." },
+  {
+    term: "🪪 Nombre completo",
+    def: "🕵️ Riesgo de suplantación de identidad",
+    article: "Art. 212 COIP – Suplantación de identidad: usar el nombre real de otra persona para hacerse pasar por ella en línea es un delito sancionado con hasta 3 años de prisión en Ecuador."
+  },
+  {
+    term: "🏠 Dirección de casa",
+    def: "😨 Riesgo de acoso o seguimiento",
+    article: "LOPDP, Art. 10 – Principio de seguridad: la dirección física es un dato personal sensible. Revelarla en internet puede exponerte a situaciones de peligro real fuera del mundo digital."
+  },
+  {
+    term: "📱 Número de teléfono",
+    def: "📵 Riesgo de llamadas no deseadas",
+    article: "LOPDP, Art. 10 – Principio de confidencialidad: tu número de teléfono es un dato personal. Compartirlo sin control puede exponerte a acoso, fraude o contacto no solicitado."
+  },
+  {
+    term: "👤 Perfil en redes sociales",
+    def: "👣 Deja huella digital",
+    article: "LOPDP, Art. 7 – Autodeterminación informativa: todo lo que publicas en redes forma parte de tu huella digital. Tienes derecho a decidir quién accede a tu información y cómo se usa."
+  },
+  {
+    term: "🖼️ Fotos personales",
+    def: "🚫 Pueden usarse sin tu permiso",
+    article: "Art. 178 COIP – Violación a la intimidad: publicar, difundir o usar imágenes de otra persona sin su consentimiento está sancionado. Tu imagen te pertenece."
+  },
+  {
+    term: "🔑 Contraseña",
+    def: "💻 Riesgo de hackeo de cuentas",
+    article: "Art. 66, numeral 19 de la Constitución del Ecuador y LOPDP, Art. 10: tus credenciales digitales son datos de seguridad. Compartirlas o usar contraseñas débiles facilita el acceso no autorizado a tus cuentas."
+  },
+  {
+    term: "🎂 Fecha de nacimiento",
+    def: "🔓 Puede ayudar a adivinar contraseñas",
+    article: "LOPDP, Art. 4 – Definición de datos personales: la fecha de nacimiento es un dato personal. Combinada con otros datos, puede usarse para acceder a cuentas o suplantar tu identidad."
+  },
+  {
+    term: "📧 Correo electrónico",
+    def: "🎣 Riesgo de correos fraudulentos (phishing)",
+    article: "Art. 190 COIP – Apropiación fraudulenta por medios electrónicos: el phishing usa correos falsos para robar datos. Compartir tu correo sin cuidado aumenta el riesgo de ser víctima."
+  },
+  {
+    term: "🎯 Intereses y actividades",
+    def: "🗂️ Los usan para crear perfiles tuyos",
+    article: "LOPDP, Art. 4 y 10 – Principio de finalidad: las plataformas digitales recopilan tus intereses para construir un perfil comercial. Tienes derecho a saber cómo usan esa información."
+  },
 ];
 
 let memFlipped = [];
@@ -533,7 +556,7 @@ let memPlayCount = 0;
 
 function startMemory() {
   memFlipped = []; memMatched = []; memLocked = false; memCards = [];
-  const pairs = pickRandom(MEMORY_PAIRS, 6);
+  const pairs = shuffleArray(MEMORY_PAIRS); // todos los 9 pares, orden aleatorio
   memPlayCount = pairs.length;
   const items = [];
   pairs.forEach((p, i) => {
@@ -569,7 +592,10 @@ function renderMemGrid() {
     el.style.position = 'relative';
     el.innerHTML = `
       <div class="mem-card-front">❓</div>
-      <div class="mem-card-back" style="font-size:0.72rem;text-align:center;padding:6px;line-height:1.3">${card.text}</div>
+      <div class="mem-card-back" style="font-size:0.78rem;text-align:center;padding:8px 4px;line-height:1.35;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
+        <span style="font-size:1.6rem;line-height:1">${card.text.match(/^\S+/)?.[0] || ''}</span>
+        <span>${card.text.replace(/^\S+\s*/, '')}</span>
+      </div>
     `;
     if (!isMatched) el.onclick = () => flipMemCard(idx);
     grid.appendChild(el);
