@@ -502,49 +502,49 @@ function pickRandom(pool, n) {
 // =============================================
 const MEMORY_PAIRS = [
   {
-    term: "🪪 Nombre completo",
-    def: "🕵️ Riesgo de suplantación de identidad",
-    article: "Art. 212 COIP – Suplantación de identidad: usar el nombre real de otra persona para hacerse pasar por ella en línea es un delito sancionado con hasta 3 años de prisión en Ecuador."
+    term: "🌐\nCiudadanía digital",
+    def: "🗳️\nEjercicio crítico y responsable de tus derechos en el entorno digital",
+    article: "AGESIC (2024): la ciudadanía digital es el ejercicio práctico y crítico de la ciudadanía en el entorno digital, reconociendo derechos y responsabilidades. En Ecuador, la Constitución Art. 16 garantiza el acceso universal a las tecnologías de información."
   },
   {
-    term: "🏠 Dirección de casa",
-    def: "😨 Riesgo de acoso o seguimiento",
-    article: "LOPDP, Art. 10 – Principio de seguridad: la dirección física es un dato personal sensible. Revelarla en internet puede exponerte a situaciones de peligro real fuera del mundo digital."
+    term: "👣\nHuella digital",
+    def: "🔍\nTodo rastro que dejas al navegar, publicar o registrarte en internet",
+    article: "LOPDP, Art. 7 – Autodeterminación informativa: tienes derecho a saber qué datos tuyos existen en línea y a controlar cómo se usan. Tu huella digital te pertenece."
   },
   {
-    term: "📱 Número de teléfono",
-    def: "📵 Riesgo de llamadas no deseadas",
-    article: "LOPDP, Art. 10 – Principio de confidencialidad: tu número de teléfono es un dato personal. Compartirlo sin control puede exponerte a acoso, fraude o contacto no solicitado."
+    term: "🧠\nAlfabetización digital",
+    def: "📋\nSaber gestionar tu información personal y mantenerte seguro/a en línea",
+    article: "Smowl Tech (2023): la ciudadanía digital implica la capacidad para evaluar críticamente la información en línea y la comprensión de los derechos y responsabilidades digitales."
   },
   {
-    term: "👤 Perfil en redes sociales",
-    def: "👣 Deja huella digital",
-    article: "LOPDP, Art. 7 – Autodeterminación informativa: todo lo que publicas en redes forma parte de tu huella digital. Tienes derecho a decidir quién accede a tu información y cómo se usa."
+    term: "🌍\nDesterritorialización",
+    def: "🤝\nPuedes participar y colaborar con personas de cualquier lugar del mundo",
+    article: "Venegas (2020): la expansión de lo virtual genera comunidades digitales que trascienden fronteras físicas, ampliando las posibilidades de participación ciudadana global."
   },
   {
-    term: "🖼️ Fotos personales",
-    def: "🚫 Pueden usarse sin tu permiso",
-    article: "Art. 178 COIP – Violación a la intimidad: publicar, difundir o usar imágenes de otra persona sin su consentimiento está sancionado. Tu imagen te pertenece."
+    term: "🔒\nAutodeterminación informativa",
+    def: "✋\nTú decides qué datos personales compartes y con quién",
+    article: "LOPDP, Art. 7 y Constitución del Ecuador, Art. 66 num. 19: tienes derecho a decidir sobre el uso de tus datos personales. Nadie puede usarlos sin tu consentimiento."
   },
   {
-    term: "🔑 Contraseña",
-    def: "💻 Riesgo de hackeo de cuentas",
-    article: "Art. 66, numeral 19 de la Constitución del Ecuador y LOPDP, Art. 10: tus credenciales digitales son datos de seguridad. Compartirlas o usar contraseñas débiles facilita el acceso no autorizado a tus cuentas."
+    term: "🤖\nEntorno digital",
+    def: "💻\nConjunto de tecnologías, plataformas y redes donde interactuamos en línea",
+    article: "El entorno digital abarca internet, dispositivos electrónicos, redes sociales y plataformas de servicios. Es el espacio donde se ejerce la ciudadanía digital (Lectura Complementaria, Tema 4)."
   },
   {
-    term: "🎂 Fecha de nacimiento",
-    def: "🔓 Puede ayudar a adivinar contraseñas",
-    article: "LOPDP, Art. 4 – Definición de datos personales: la fecha de nacimiento es un dato personal. Combinada con otros datos, puede usarse para acceder a cuentas o suplantar tu identidad."
+    term: "📡\nBrecha digital",
+    def: "🚧\nDesigualdad entre quienes tienen acceso a tecnología y quienes no",
+    article: "Claro et al. (2021): la brecha digital refuerza líneas de exclusión social. En Ecuador, la Constitución Art. 16 reconoce el acceso a las TIC como un derecho para reducir esta brecha."
   },
   {
-    term: "📧 Correo electrónico",
-    def: "🎣 Riesgo de correos fraudulentos (phishing)",
-    article: "Art. 190 COIP – Apropiación fraudulenta por medios electrónicos: el phishing usa correos falsos para robar datos. Compartir tu correo sin cuidado aumenta el riesgo de ser víctima."
+    term: "👁️\nCapitalismo de vigilancia",
+    def: "📊\nModelo en que empresas recopilan tus datos para obtener ganancias",
+    article: "LOPDP, Art. 4 y 10 – Principio de finalidad: las plataformas no pueden usar tus datos para fines distintos a los que declararon. Tienes derecho a saber cómo monetizan tu información."
   },
   {
-    term: "🎯 Intereses y actividades",
-    def: "🗂️ Los usan para crear perfiles tuyos",
-    article: "LOPDP, Art. 4 y 10 – Principio de finalidad: las plataformas digitales recopilan tus intereses para construir un perfil comercial. Tienes derecho a saber cómo usan esa información."
+    term: "⚖️\nDerechos digitales",
+    def: "🛡️\nLibertades y protecciones que tienes como persona en el entorno digital",
+    article: "Constitución del Ecuador, Art. 66 num. 19 y 20, y LOPDP: tus derechos digitales incluyen privacidad, protección de datos, acceso a información y no discriminación en línea."
   },
 ];
 
@@ -556,7 +556,7 @@ let memPlayCount = 0;
 
 function startMemory() {
   memFlipped = []; memMatched = []; memLocked = false; memCards = [];
-  const pairs = shuffleArray(MEMORY_PAIRS); // todos los 9 pares, orden aleatorio
+  const pairs = pickRandom(MEMORY_PAIRS, 6); // 6 pares al azar del banco de 9
   memPlayCount = pairs.length;
   const items = [];
   pairs.forEach((p, i) => {
@@ -592,9 +592,9 @@ function renderMemGrid() {
     el.style.position = 'relative';
     el.innerHTML = `
       <div class="mem-card-front">❓</div>
-      <div class="mem-card-back" style="font-size:0.78rem;text-align:center;padding:8px 4px;line-height:1.35;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
-        <span style="font-size:1.6rem;line-height:1">${card.text.match(/^\S+/)?.[0] || ''}</span>
-        <span>${card.text.replace(/^\S+\s*/, '')}</span>
+      <div class="mem-card-back" style="font-size:0.78rem;text-align:center;padding:8px 4px;line-height:1.4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+        <span style="font-size:2.2rem;line-height:1">${card.text.split('\n')[0]}</span>
+        <span style="font-size:0.72rem;line-height:1.35">${card.text.split('\n')[1] || ''}</span>
       </div>
     `;
     if (!isMatched) el.onclick = () => flipMemCard(idx);
