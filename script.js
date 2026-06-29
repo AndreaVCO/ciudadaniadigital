@@ -152,68 +152,66 @@ function restartGame() {
 }
 
 // =================== MAP RENDERING ===================
-// ViewBox del SVG superpuesto: 1000 x 707 (proporción de la imagen)
-// Coordenadas medidas sobre la imagen anotada por el usuario
+// ViewBox SVG superpuesto: 1000 x 707
+// Coordenadas calibradas por el usuario
 
-// Las 5 zonas de color — coordenadas exactas según marcas del usuario
+// Posición INICIO
+const START_POS = { x: 175, y: 105 };
+
+// Posición del cofre (destino final, NO es zona jugable)
+const CHEST_POS = { x: 861, y: 583 };
+
+// Zonas de color jugables (5 zonas)
 const ZONE_NODES = [
-  { x: 118, y: 372, color: '#e91e8c',  label: 'Z1' }, // Rosa   — Zona 1
-  { x: 510, y: 188, color: '#2e7d32',  label: 'Z2' }, // Verde  — Zona 2
-  { x: 922, y: 372, color: '#f9a825',  label: 'Z3' }, // Amarilla — Zona 3
-  { x: 415, y: 543, color: '#7b1fa2',  label: 'Z4' }, // Morada — Zona 4
-  { x: 900, y: 630, color: '#8B4513',  label: 'Z5' }, // Cofre  — Zona 5
+  { x: 128, y: 347, color: '#e91e8c', label: 'Z1' }, // Rosa
+  { x: 553, y: 163, color: '#2e7d32', label: 'Z2' }, // Verde
+  { x: 895, y: 342, color: '#f9a825', label: 'Z3' }, // Amarilla
+  { x: 578, y: 431, color: '#7b1fa2', label: 'Z4' }, // Morada
+  { x: 561, y: 635, color: '#1565c0', label: 'Z5' }, // Azul (casilla antes del cofre)
 ];
 
-// Posición INICIO (etiqueta blanca arriba-izquierda)
-const START_POS = { x: 205, y: 130 };
-
-// Camino completo de casillas (blancas + de color) en orden desde INICIO
-// Las zonas de color están intercaladas en el camino
-// índices 0..N-1; los índices de zona se definen en ZONE_CELL_INDICES
+// Camino completo casilla a casilla desde INICIO hasta el cofre
+// Las zonas de color están en los índices definidos en ZONE_CELL_INDICES
 const PATH_CELLS = [
-  { x: 205, y: 130 }, // 0  INICIO
-  { x: 118, y: 195 }, // 1  casilla blanca
-  { x: 88,  y: 270 }, // 2  casilla blanca
-  { x: 118, y: 372 }, // 3  ZONA 1 (rosa)
-  { x: 200, y: 390 }, // 4  casilla blanca
-  { x: 278, y: 355 }, // 5  casilla blanca
-  { x: 348, y: 300 }, // 6  casilla blanca
-  { x: 415, y: 240 }, // 7  casilla blanca
-  { x: 510, y: 188 }, // 8  ZONA 2 (verde)
-  { x: 598, y: 175 }, // 9  casilla blanca
-  { x: 680, y: 175 }, // 10 casilla blanca
-  { x: 760, y: 190 }, // 11 casilla blanca
-  { x: 840, y: 240 }, // 12 casilla blanca
-  { x: 900, y: 305 }, // 13 casilla blanca
-  { x: 922, y: 372 }, // 14 ZONA 3 (amarilla)
-  { x: 900, y: 440 }, // 15 casilla blanca
-  { x: 840, y: 478 }, // 16 casilla blanca
-  { x: 770, y: 490 }, // 17 casilla blanca
-  { x: 698, y: 490 }, // 18 casilla blanca
-  { x: 622, y: 490 }, // 19 casilla blanca
-  { x: 548, y: 490 }, // 20 casilla blanca
-  { x: 478, y: 490 }, // 21 casilla blanca
-  { x: 415, y: 543 }, // 22 ZONA 4 (morada)
-  { x: 415, y: 615 }, // 23 casilla blanca
-  { x: 480, y: 655 }, // 24 casilla blanca
-  { x: 558, y: 660 }, // 25 casilla blanca
-  { x: 638, y: 655 }, // 26 casilla blanca
-  { x: 718, y: 645 }, // 27 casilla blanca
-  { x: 810, y: 638 }, // 28 casilla blanca
-  { x: 900, y: 630 }, // 29 ZONA 5 (cofre)
+  { x: 175, y: 105 }, // 0  INICIO
+  { x: 128, y: 195 }, // 1
+  { x: 100, y: 270 }, // 2
+  { x: 128, y: 347 }, // 3  ZONA 1 (rosa)  ← índice 3
+  { x: 200, y: 375 }, // 4
+  { x: 278, y: 340 }, // 5
+  { x: 355, y: 285 }, // 6
+  { x: 445, y: 220 }, // 7
+  { x: 553, y: 163 }, // 8  ZONA 2 (verde) ← índice 8
+  { x: 638, y: 163 }, // 9
+  { x: 718, y: 175 }, // 10
+  { x: 800, y: 205 }, // 11
+  { x: 860, y: 268 }, // 12
+  { x: 895, y: 342 }, // 13 ZONA 3 (amarilla) ← índice 13
+  { x: 870, y: 415 }, // 14
+  { x: 810, y: 450 }, // 15
+  { x: 740, y: 460 }, // 16
+  { x: 670, y: 455 }, // 17
+  { x: 578, y: 431 }, // 18 ZONA 4 (morada)  ← índice 18
+  { x: 510, y: 460 }, // 19
+  { x: 445, y: 490 }, // 20
+  { x: 480, y: 555 }, // 21
+  { x: 561, y: 635 }, // 22 ZONA 5 (azul)    ← índice 22
+  { x: 650, y: 620 }, // 23
+  { x: 750, y: 600 }, // 24
+  { x: 861, y: 583 }, // 25 COFRE (destino final)
 ];
 
-const ZONE_CELL_INDICES = [3, 8, 14, 22, 29];
+const ZONE_CELL_INDICES = [3, 8, 13, 18, 22];
+const CHEST_CELL_IDX    = 25;
 
-// Posicion actual del personaje (índice de celda en PATH_CELLS)
-let charCellIdx = 0; // empieza en INICIO
+// Posición actual del personaje (índice en PATH_CELLS)
+let charCellIdx = 0;
 
 function getCellPos(idx) {
   return PATH_CELLS[Math.max(0, Math.min(idx, PATH_CELLS.length - 1))];
 }
 
 function getCharCellIdxForState() {
-  // El personaje está en la celda de la última zona completada
   let best = 0;
   for (let zi = 0; zi < ZONES.length; zi++) {
     if (state.completed.includes(ZONES[zi].id)) {
@@ -225,163 +223,198 @@ function getCharCellIdxForState() {
 
 function renderMap() {
   const pct = (state.completed.length / ZONES.length) * 100;
-  document.getElementById('main-progress').style.width = pct + '\%';
+  document.getElementById('main-progress').style.width = pct + '%';
 
-  // Sincronizar posición del personaje con el estado guardado (sin animar)
+  // Sincronizar posición del personaje con estado guardado (sin animación)
   charCellIdx = getCharCellIdxForState();
 
   const VW = 1000, VH = 707;
 
-  // Casillas blancas decorativas (las que NO son zonas de color)
+  // Casillas blancas decorativas
   const decorCells = PATH_CELLS.map((cell, idx) => {
-    if (ZONE_CELL_INDICES.includes(idx) || idx === 0) return '';
-    return `<ellipse cx="${cell.x}" cy="${cell.y}" rx="30" ry="26"
-      fill="white" fill-opacity="0.15" stroke="white" stroke-opacity="0.3" stroke-width="1"/>`;
+    if (ZONE_CELL_INDICES.includes(idx) || idx === 0 || idx === CHEST_CELL_IDX) return '';
+    return `<ellipse cx="${cell.x}" cy="${cell.y}" rx="28" ry="24"
+      fill="white" fill-opacity="0.12" stroke="white" stroke-opacity="0.25" stroke-width="1"/>`;
   }).join('');
 
-  // Zonas de color clicables
+  // Zonas jugables
   const zonesSvg = ZONES.map((zone, zi) => {
     const node = ZONE_NODES[zi];
-    const isDone = state.completed.includes(zone.id);
-    const isAvailable = zi === 0 || state.completed.includes(ZONES[zi-1].id);
-    const isLocked = !isAvailable && !isDone;
+    const isDone      = state.completed.includes(zone.id);
+    const isAvailable = zi === 0 || state.completed.includes(ZONES[zi - 1].id);
+    const isLocked    = !isAvailable && !isDone;
 
     let badge = '';
     if (isDone) {
-      badge = `<circle cx="${node.x + 26}" cy="${node.y - 26}" r="14"
-        fill="#27ae60" stroke="white" stroke-width="2.5"/>
-        <text x="${node.x + 26}" y="${node.y - 21}" text-anchor="middle"
-          font-size="15" fill="white" font-weight="bold">✓</text>`;
+      badge = `
+        <circle cx="${node.x + 28}" cy="${node.y - 28}" r="15"
+          fill="#27ae60" stroke="white" stroke-width="2.5"/>
+        <text x="${node.x + 28}" y="${node.y - 23}" text-anchor="middle"
+          font-size="16" fill="white" font-weight="bold">✓</text>`;
     } else if (isLocked) {
-      badge = `<circle cx="${node.x + 26}" cy="${node.y - 26}" r="14"
-        fill="rgba(0,0,0,0.45)" stroke="white" stroke-width="2.5"/>
-        <text x="${node.x + 26}" y="${node.y - 21}" text-anchor="middle"
-          font-size="13" fill="white">🔒</text>`;
+      badge = `
+        <circle cx="${node.x + 28}" cy="${node.y - 28}" r="15"
+          fill="rgba(0,0,0,0.5)" stroke="white" stroke-width="2.5"/>
+        <text x="${node.x + 28}" y="${node.y - 23}" text-anchor="middle"
+          font-size="14" fill="white">🔒</text>`;
     }
 
     const pulseClass = (!isLocked && !isDone) ? 'zone-pulse' : '';
-    const opacity = isLocked ? '0.45' : '0.95';
+    const opacity    = isLocked ? '0.4' : '0.92';
+    const clickAttr  = !isLocked
+      ? `onclick="handleZoneClick(${zi})" style="cursor:pointer"`
+      : `style="cursor:not-allowed"`;
 
     return `
-      <g class="zone-cell-group" onmouseenter="showZoneDetail(${zi})"
-         ${!isLocked ? `onclick="handleZoneClick(${zi})"` : ''}
-         style="${!isLocked ? 'cursor:pointer' : 'cursor:not-allowed'}">
-        <ellipse cx="${node.x}" cy="${node.y}" rx="46" ry="40"
+      <g class="zone-cell-group" onmouseenter="showZoneDetail(${zi})" ${clickAttr}>
+        <ellipse cx="${node.x}" cy="${node.y}" rx="48" ry="42"
           fill="${node.color}" opacity="${opacity}"
           stroke="white" stroke-width="${isDone ? 4 : 2.5}"
           class="${pulseClass}"/>
-        <text x="${node.x}" y="${node.y - 6}" text-anchor="middle"
-          dominant-baseline="central" font-size="24" style="pointer-events:none">${zone.icon}</text>
-        <text x="${node.x}" y="${node.y + 18}" text-anchor="middle"
-          font-family="'Fredoka One',cursive" font-size="12" fill="white"
+        <text x="${node.x}" y="${node.y - 5}" text-anchor="middle"
+          dominant-baseline="central" font-size="26"
+          style="pointer-events:none">${zone.icon}</text>
+        <text x="${node.x}" y="${node.y + 19}" text-anchor="middle"
+          font-family="'Fredoka One',cursive" font-size="13" fill="white"
           paint-order="stroke" stroke="rgba(0,0,0,0.7)" stroke-width="3px"
           style="pointer-events:none">Z${zone.id}</text>
         ${badge}
       </g>`;
   }).join('');
 
-  // Personaje 📱 con carita
-  const cPos = getCellPos(charCellIdx);
-  const charSvg = buildCharSvg(cPos.x, cPos.y);
+  // Cofre destino (decorativo, brilla cuando todas las zonas están completadas)
+  const allDone   = ZONES.every(z => state.completed.includes(z.id));
+  const chestGlow = allDone ? 'chest-glow-pulse' : '';
+  const chestSvg  = `
+    <g class="${chestGlow}" style="pointer-events:none">
+      <ellipse cx="${CHEST_POS.x}" cy="${CHEST_POS.y + 38}" rx="36" ry="12"
+        fill="rgba(0,0,0,0.3)"/>
+      <g transform="translate(${CHEST_POS.x - 28},${CHEST_POS.y - 22})">
+        <rect x="0" y="14" width="56" height="30" rx="6"
+          fill="#a9692f" stroke="#5c3414" stroke-width="2"/>
+        <path d="M0,16 Q0,0 28,0 Q56,0 56,16 Z"
+          fill="#c98a3e" stroke="#5c3414" stroke-width="2"/>
+        <rect x="22" y="4" width="12" height="9" rx="2" fill="#f4c430"/>
+        <rect x="0" y="26" width="56" height="6" fill="#e0b13e"/>
+        <circle cx="28" cy="29" r="5" fill="#f4c430" stroke="#a9772a" stroke-width="1.5"/>
+      </g>
+    </g>`;
 
-  const mapEl = document.getElementById('island-map');
-  mapEl.innerHTML = `
+  // Personaje 📱
+  const cPos     = getCellPos(charCellIdx);
+  const charSvg  = buildCharSvg(cPos.x, cPos.y);
+
+  document.getElementById('island-map').innerHTML = `
     <div class="map-img-wrap">
-      <img src="SPRITES__1_.png" alt="Mapa del Tesoro"
-           style="display:block; width:100%; height:auto; border-radius:18px 18px 0 0;"/>
+      <img src="SPRITES.png" alt="Mapa del Tesoro"
+        style="display:block;width:100%;height:auto;border-radius:18px 18px 0 0;"/>
       <svg id="map-svg-overlay" viewBox="0 0 ${VW} ${VH}"
-           xmlns="http://www.w3.org/2000/svg"
-           style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;">
+        xmlns="http://www.w3.org/2000/svg"
+        style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;">
         <defs>
           <style>
-            .zone-cell-group { pointer-events: all; }
+            .zone-cell-group { pointer-events:all; }
             .zone-pulse {
               animation: zonePulse 2.2s ease-in-out infinite;
             }
             @keyframes zonePulse {
               0%,100% { filter: drop-shadow(0 0 5px rgba(255,255,255,0.6)); }
-              50%      { filter: drop-shadow(0 0 14px rgba(255,255,255,1)); }
+              50%      { filter: drop-shadow(0 0 16px rgba(255,255,255,1)); }
+            }
+            .chest-glow-pulse {
+              animation: chestPulse 1.4s ease-in-out infinite;
+            }
+            @keyframes chestPulse {
+              0%,100% { filter: drop-shadow(0 0 6px rgba(244,196,48,0.7)); }
+              50%      { filter: drop-shadow(0 0 22px rgba(244,196,48,1)); }
             }
           </style>
         </defs>
         ${decorCells}
+        ${chestSvg}
         ${zonesSvg}
         ${charSvg}
       </svg>
     </div>
     <div class="board-legend" id="zone-detail">
       <p>Toca una zona de color para empezar 🧭</p>
-    </div>
-  `;
+    </div>`;
 
   showZoneDetail(firstActionableZoneIdx());
 }
 
 function buildCharSvg(cx, cy) {
   return `
-    <g id="map-character" transform="translate(${cx},${cy - 50})">
-      <ellipse cx="0" cy="50" rx="20" ry="7" fill="rgba(0,0,0,0.28)"/>
-      <rect x="-15" y="0" width="30" height="42" rx="6"
+    <g id="map-character" transform="translate(${cx},${cy - 52})">
+      <ellipse cx="0" cy="52" rx="20" ry="7" fill="rgba(0,0,0,0.3)"/>
+      <rect x="-15" y="0" width="30" height="44" rx="6"
         fill="#1a1a2e" stroke="#4fc3f7" stroke-width="2.5"/>
-      <rect x="-10" y="5" width="20" height="28" rx="3" fill="#e3f2fd"/>
-      <circle cx="-4" cy="13" r="2.8" fill="#1a1a2e"/>
-      <circle cx="4"  cy="13" r="2.8" fill="#1a1a2e"/>
-      <circle cx="-3" cy="12" r="1"   fill="white"/>
-      <circle cx="5"  cy="12" r="1"   fill="white"/>
-      <path d="M -5,20 Q 0,26 5,20" stroke="#1a1a2e" stroke-width="2"
+      <rect x="-10" y="5" width="20" height="30" rx="3" fill="#e3f2fd"/>
+      <circle cx="-4" cy="14" r="3"   fill="#1a1a2e"/>
+      <circle cx="4"  cy="14" r="3"   fill="#1a1a2e"/>
+      <circle cx="-3" cy="13" r="1.1" fill="white"/>
+      <circle cx="5"  cy="13" r="1.1" fill="white"/>
+      <path d="M -5,22 Q 0,27 5,22" stroke="#1a1a2e" stroke-width="2.2"
         fill="none" stroke-linecap="round"/>
-      <circle cx="0" cy="38" r="2.8" fill="#37474f" stroke="#546e7a" stroke-width="1"/>
-      <circle cx="0" cy="2"  r="1.4" fill="#37474f"/>
+      <circle cx="0" cy="40" r="3"   fill="#37474f" stroke="#546e7a" stroke-width="1"/>
+      <circle cx="0" cy="2"  r="1.5" fill="#37474f"/>
       <animateTransform attributeName="transform" type="translate"
         values="0,0; 0,-5; 0,0" dur="2s" repeatCount="indefinite" additive="sum"/>
     </g>`;
 }
 
-// Clic en zona: primero anima el personaje, luego arranca el juego
+// ── Clic en zona: celular camina hasta la zona y arranca el juego ──────────
 function handleZoneClick(zoneIdx) {
-  const zone = ZONES[zoneIdx];
+  const zone          = ZONES[zoneIdx];
   const targetCellIdx = ZONE_CELL_INDICES[zoneIdx];
 
-  // Deshabilitar clics mientras anima
+  // Bloquear clics mientras se anima
   const svg = document.getElementById('map-svg-overlay');
   if (svg) svg.style.pointerEvents = 'none';
 
-  animateCharacterStep(charCellIdx, targetCellIdx, () => {
+  animateCellByCell(charCellIdx, targetCellIdx, () => {
     charCellIdx = targetCellIdx;
     if (svg) svg.style.pointerEvents = '';
     startZone(zone);
   });
 }
 
-function animateCharacterStep(fromIdx, toIdx, callback) {
-  const char = document.getElementById('map-character');
-  if (!char || fromIdx >= toIdx) {
-    if (callback) callback();
-    return;
-  }
+// ── Al completar la última zona (Z5): celular camina hasta el cofre ────────
+function walkToChestThenFinish() {
+  const svg = document.getElementById('map-svg-overlay');
+  if (svg) svg.style.pointerEvents = 'none';
 
-  let currentIdx = fromIdx;
+  animateCellByCell(charCellIdx, CHEST_CELL_IDX, () => {
+    charCellIdx = CHEST_CELL_IDX;
+    if (svg) svg.style.pointerEvents = '';
+    // Pequeña pausa dramática antes de la pantalla final
+    setTimeout(() => showFinal(), 600);
+  });
+}
 
-  function moveOne() {
-    currentIdx++;
-    if (currentIdx > toIdx) {
-      if (callback) callback();
-      return;
+// ── Animación celda a celda ────────────────────────────────────────────────
+function animateCellByCell(fromIdx, toIdx, callback) {
+  if (fromIdx >= toIdx) { callback(); return; }
+
+  let current = fromIdx;
+
+  function step() {
+    current++;
+    const pos  = getCellPos(current);
+    const char = document.getElementById('map-character');
+    if (!char) { callback(); return; }
+
+    // Actualizar posición con transición CSS en el SVG
+    char.setAttribute('transform', `translate(${pos.x},${pos.y - 52})`);
+    char.style.transition = 'transform 0.28s ease-in-out';
+
+    if (current >= toIdx) {
+      setTimeout(callback, 350);
+    } else {
+      setTimeout(step, 320);
     }
-    const pos = getCellPos(currentIdx);
-    // Mover con CSS transition via atributo transform
-    char.style.transition = 'none'; // SVG usa animateTransform, movemos con setAttribute
-    // Reemplazar el grupo con nueva posición
-    const parent = char.parentNode;
-    const newChar = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    newChar.id = 'map-character';
-    newChar.innerHTML = char.innerHTML;
-    newChar.setAttribute('transform', `translate(${pos.x},${pos.y - 50})`);
-    parent.replaceChild(newChar, char);
-
-    setTimeout(moveOne, 320);
   }
-  moveOne();
+  step();
 }
 
 function firstActionableZoneIdx() {
@@ -392,20 +425,18 @@ function firstActionableZoneIdx() {
 }
 
 function showZoneDetail(idx) {
-  const zone = ZONES[idx];
-  const isDone = state.completed.includes(zone.id);
-  const isAvailable = idx === 0 || state.completed.includes(ZONES[idx-1].id);
-  const isLocked = !isAvailable && !isDone;
-  const detail = document.getElementById('zone-detail');
-  let statusLine = '';
-  if (isDone) {
-    const sc = state.scores[zone.id];
-    statusLine = `✅ ¡Completada! ${sc ? sc.earned + '/' + sc.max + ' pts' : ''}`;
-  } else if (isLocked) {
-    statusLine = '🔒 Completa la zona anterior para desbloquear';
-  } else {
-    statusLine = '👉 Toca la zona para jugar';
-  }
+  const zone        = ZONES[idx];
+  const isDone      = state.completed.includes(zone.id);
+  const isAvailable = idx === 0 || state.completed.includes(ZONES[idx - 1].id);
+  const isLocked    = !isAvailable && !isDone;
+  const detail      = document.getElementById('zone-detail');
+
+  let statusLine = isDone
+    ? `✅ ¡Completada! ${state.scores[zone.id] ? state.scores[zone.id].earned + '/' + state.scores[zone.id].max + ' pts' : ''}`
+    : isLocked
+      ? '🔒 Completa la zona anterior para desbloquear'
+      : '👉 Toca la zona para jugar';
+
   detail.innerHTML = `<p><strong>${zone.icon} ${zone.title}</strong> — ${zone.subtitle}<br>${statusLine}</p>`;
 }
 
@@ -582,7 +613,7 @@ function renderProtocol(zone) {
 
     <div style="text-align:center; margin-top:10px">
       ${allDone
-        ? `<button class="btn-main" onclick="showFinal()">🏆 Ver mi tesoro final</button>`
+        ? `<button class="btn-main" onclick="showMap(); setTimeout(walkToChestThenFinish, 400)">🏆 ¡Ir al cofre!</button>`
         : `<button class="btn-main" onclick="showMap()">Continuar en el mapa →</button>`
       }
       <br><button class="btn-secondary" onclick="startZone(state.currentZone)" style="margin-top:10px">Repetir zona</button>
