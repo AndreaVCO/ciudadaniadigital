@@ -155,56 +155,51 @@ function restartGame() {
 // ViewBox SVG superpuesto: 1000 x 707
 // Coordenadas calibradas por el usuario
 
-// Posición INICIO
-const START_POS = { x: 175, y: 105 };
+const START_POS       = { x: 175, y: 105 };
+const CHEST_POS       = { x: 861, y: 583 };
 
-// Posición del cofre (destino final, NO es zona jugable)
-const CHEST_POS = { x: 861, y: 583 };
-
-// Zonas de color jugables (5 zonas)
 const ZONE_NODES = [
-  { x: 128, y: 347, color: '#e91e8c', label: 'Z1' }, // Rosa
-  { x: 553, y: 163, color: '#2e7d32', label: 'Z2' }, // Verde
-  { x: 895, y: 342, color: '#f9a825', label: 'Z3' }, // Amarilla
-  { x: 578, y: 431, color: '#7b1fa2', label: 'Z4' }, // Morada
-  { x: 561, y: 635, color: '#1565c0', label: 'Z5' }, // Azul (casilla antes del cofre)
+  { x: 128, y: 347, color: '#e91e8c', label: 'Z1' },
+  { x: 553, y: 163, color: '#2e7d32', label: 'Z2' },
+  { x: 895, y: 342, color: '#f9a825', label: 'Z3' },
+  { x: 578, y: 431, color: '#7b1fa2', label: 'Z4' },
+  { x: 561, y: 635, color: '#1565c0', label: 'Z5' },
 ];
 
-// Camino completo casilla a casilla desde INICIO hasta el cofre
-// Las zonas de color están en los índices definidos en ZONE_CELL_INDICES
 const PATH_CELLS = [
   { x: 175, y: 105 }, // 0  INICIO
   { x: 128, y: 195 }, // 1
   { x: 100, y: 270 }, // 2
-  { x: 128, y: 347 }, // 3  ZONA 1 (rosa)  ← índice 3
+  { x: 128, y: 347 }, // 3  ZONA 1
   { x: 200, y: 375 }, // 4
   { x: 278, y: 340 }, // 5
   { x: 355, y: 285 }, // 6
   { x: 445, y: 220 }, // 7
-  { x: 553, y: 163 }, // 8  ZONA 2 (verde) ← índice 8
+  { x: 553, y: 163 }, // 8  ZONA 2
   { x: 638, y: 163 }, // 9
   { x: 718, y: 175 }, // 10
   { x: 800, y: 205 }, // 11
   { x: 860, y: 268 }, // 12
-  { x: 895, y: 342 }, // 13 ZONA 3 (amarilla) ← índice 13
+  { x: 895, y: 342 }, // 13 ZONA 3
   { x: 870, y: 415 }, // 14
   { x: 810, y: 450 }, // 15
   { x: 740, y: 460 }, // 16
   { x: 670, y: 455 }, // 17
-  { x: 578, y: 431 }, // 18 ZONA 4 (morada)  ← índice 18
+  { x: 578, y: 431 }, // 18 ZONA 4
   { x: 510, y: 460 }, // 19
   { x: 445, y: 490 }, // 20
   { x: 480, y: 555 }, // 21
-  { x: 561, y: 635 }, // 22 ZONA 5 (azul)    ← índice 22
+  { x: 561, y: 635 }, // 22 ZONA 5
   { x: 650, y: 620 }, // 23
   { x: 750, y: 600 }, // 24
-  { x: 861, y: 583 }, // 25 COFRE (destino final)
+  { x: 861, y: 583 }, // 25 COFRE
 ];
 
 const ZONE_CELL_INDICES = [3, 8, 13, 18, 22];
 const CHEST_CELL_IDX    = 25;
 
-// Posición actual del personaje (índice en PATH_CELLS)
+// Posición actual del personaje — SIEMPRE empieza en 0 (INICIO)
+// Se restaura desde estado guardado en renderMap()
 let charCellIdx = 0;
 
 function getCellPos(idx) {
@@ -212,6 +207,8 @@ function getCellPos(idx) {
 }
 
 function getCharCellIdxForState() {
+  // El personaje queda en la celda de la última zona completada.
+  // Si no hay ninguna, queda en INICIO (índice 0).
   let best = 0;
   for (let zi = 0; zi < ZONES.length; zi++) {
     if (state.completed.includes(ZONES[zi].id)) {
@@ -225,7 +222,7 @@ function renderMap() {
   const pct = (state.completed.length / ZONES.length) * 100;
   document.getElementById('main-progress').style.width = pct + '%';
 
-  // Sincronizar posición del personaje con estado guardado (sin animación)
+  // Restaurar posición desde estado (sin animación)
   charCellIdx = getCharCellIdxForState();
 
   const VW = 1000, VH = 707;
@@ -239,7 +236,7 @@ function renderMap() {
 
   // Zonas jugables
   const zonesSvg = ZONES.map((zone, zi) => {
-    const node = ZONE_NODES[zi];
+    const node        = ZONE_NODES[zi];
     const isDone      = state.completed.includes(zone.id);
     const isAvailable = zi === 0 || state.completed.includes(ZONES[zi - 1].id);
     const isLocked    = !isAvailable && !isDone;
@@ -282,27 +279,9 @@ function renderMap() {
       </g>`;
   }).join('');
 
-  // Cofre destino (decorativo, brilla cuando todas las zonas están completadas)
-  const allDone   = ZONES.every(z => state.completed.includes(z.id));
-  const chestGlow = allDone ? 'chest-glow-pulse' : '';
-  const chestSvg  = `
-    <g class="${chestGlow}" style="pointer-events:none">
-      <ellipse cx="${CHEST_POS.x}" cy="${CHEST_POS.y + 38}" rx="36" ry="12"
-        fill="rgba(0,0,0,0.3)"/>
-      <g transform="translate(${CHEST_POS.x - 28},${CHEST_POS.y - 22})">
-        <rect x="0" y="14" width="56" height="30" rx="6"
-          fill="#a9692f" stroke="#5c3414" stroke-width="2"/>
-        <path d="M0,16 Q0,0 28,0 Q56,0 56,16 Z"
-          fill="#c98a3e" stroke="#5c3414" stroke-width="2"/>
-        <rect x="22" y="4" width="12" height="9" rx="2" fill="#f4c430"/>
-        <rect x="0" y="26" width="56" height="6" fill="#e0b13e"/>
-        <circle cx="28" cy="29" r="5" fill="#f4c430" stroke="#a9772a" stroke-width="1.5"/>
-      </g>
-    </g>`;
-
   // Personaje 📱
-  const cPos     = getCellPos(charCellIdx);
-  const charSvg  = buildCharSvg(cPos.x, cPos.y);
+  const cPos    = getCellPos(charCellIdx);
+  const charSvg = buildCharSvg(cPos.x, cPos.y);
 
   document.getElementById('island-map').innerHTML = `
     <div class="map-img-wrap">
@@ -321,17 +300,9 @@ function renderMap() {
               0%,100% { filter: drop-shadow(0 0 5px rgba(255,255,255,0.6)); }
               50%      { filter: drop-shadow(0 0 16px rgba(255,255,255,1)); }
             }
-            .chest-glow-pulse {
-              animation: chestPulse 1.4s ease-in-out infinite;
-            }
-            @keyframes chestPulse {
-              0%,100% { filter: drop-shadow(0 0 6px rgba(244,196,48,0.7)); }
-              50%      { filter: drop-shadow(0 0 22px rgba(244,196,48,1)); }
-            }
           </style>
         </defs>
         ${decorCells}
-        ${chestSvg}
         ${zonesSvg}
         ${charSvg}
       </svg>
@@ -363,33 +334,58 @@ function buildCharSvg(cx, cy) {
     </g>`;
 }
 
-// ── Clic en zona: celular camina hasta la zona y arranca el juego ──────────
+// ── Clic en zona: camina hasta allí, muestra botón "¡Jugar!" ──────────────
 function handleZoneClick(zoneIdx) {
   const zone          = ZONES[zoneIdx];
   const targetCellIdx = ZONE_CELL_INDICES[zoneIdx];
 
-  // Bloquear clics mientras se anima
+  // Si ya está ahí (zona completada o vuelta al mapa), no re-animar
+  if (charCellIdx === targetCellIdx) {
+    showZonePlayPrompt(zone);
+    return;
+  }
+
+  // Bloquear interacción durante la animación
   const svg = document.getElementById('map-svg-overlay');
   if (svg) svg.style.pointerEvents = 'none';
+  // Ocultar leyenda durante el viaje
+  document.getElementById('zone-detail').innerHTML =
+    '<p>🚶 ¡Caminando hacia la zona…</p>';
 
   animateCellByCell(charCellIdx, targetCellIdx, () => {
     charCellIdx = targetCellIdx;
     if (svg) svg.style.pointerEvents = '';
-    startZone(zone);
+    // Llegó — mostrar botón de inicio
+    showZonePlayPrompt(zone);
   });
 }
 
-// ── Al completar la última zona (Z5): celular camina hasta el cofre ────────
-function walkToChestThenFinish() {
-  const svg = document.getElementById('map-svg-overlay');
-  if (svg) svg.style.pointerEvents = 'none';
+// Muestra en la leyenda el botón para arrancar el juego
+function showZonePlayPrompt(zone) {
+  document.getElementById('zone-detail').innerHTML = `
+    <p><strong>${zone.icon} ${zone.title}</strong> — ${zone.subtitle}</p>
+    <button class="btn-main" style="margin-top:8px;font-size:1rem;padding:10px 28px"
+      onclick="startZone(ZONES[${ZONES.indexOf(zone)}])">
+      ¡Jugar esta zona! 🎮
+    </button>`;
+}
 
-  animateCellByCell(charCellIdx, CHEST_CELL_IDX, () => {
-    charCellIdx = CHEST_CELL_IDX;
-    if (svg) svg.style.pointerEvents = '';
-    // Pequeña pausa dramática antes de la pantalla final
-    setTimeout(() => showFinal(), 600);
-  });
+// ── Al completar la última zona: camina al cofre y muestra pantalla final ──
+function walkToChestThenFinish() {
+  showScreen('screen-map');
+  renderMap();
+
+  setTimeout(() => {
+    const svg = document.getElementById('map-svg-overlay');
+    if (svg) svg.style.pointerEvents = 'none';
+    document.getElementById('zone-detail').innerHTML =
+      '<p>🎉 ¡Todas las zonas completadas! Corriendo al cofre…</p>';
+
+    animateCellByCell(charCellIdx, CHEST_CELL_IDX, () => {
+      charCellIdx = CHEST_CELL_IDX;
+      setTimeout(() => showFinal(), 700);
+    });
+  }, 400);
 }
 
 // ── Animación celda a celda ────────────────────────────────────────────────
@@ -404,14 +400,13 @@ function animateCellByCell(fromIdx, toIdx, callback) {
     const char = document.getElementById('map-character');
     if (!char) { callback(); return; }
 
-    // Actualizar posición con transición CSS en el SVG
+    // Mover el grupo SVG actualizando el atributo transform
     char.setAttribute('transform', `translate(${pos.x},${pos.y - 52})`);
-    char.style.transition = 'transform 0.28s ease-in-out';
 
     if (current >= toIdx) {
-      setTimeout(callback, 350);
+      setTimeout(callback, 400);
     } else {
-      setTimeout(step, 320);
+      setTimeout(step, 340);
     }
   }
   step();
@@ -437,7 +432,8 @@ function showZoneDetail(idx) {
       ? '🔒 Completa la zona anterior para desbloquear'
       : '👉 Toca la zona para jugar';
 
-  detail.innerHTML = `<p><strong>${zone.icon} ${zone.title}</strong> — ${zone.subtitle}<br>${statusLine}</p>`;
+  detail.innerHTML =
+    `<p><strong>${zone.icon} ${zone.title}</strong> — ${zone.subtitle}<br>${statusLine}</p>`;
 }
 
 // =================== FEEDBACK ===================
@@ -613,7 +609,7 @@ function renderProtocol(zone) {
 
     <div style="text-align:center; margin-top:10px">
       ${allDone
-        ? `<button class="btn-main" onclick="showMap(); setTimeout(walkToChestThenFinish, 400)">🏆 ¡Ir al cofre!</button>`
+        ? `<button class="btn-main" onclick="walkToChestThenFinish()">🏆 ¡Ir al cofre! 🎉</button>`
         : `<button class="btn-main" onclick="showMap()">Continuar en el mapa →</button>`
       }
       <br><button class="btn-secondary" onclick="startZone(state.currentZone)" style="margin-top:10px">Repetir zona</button>
