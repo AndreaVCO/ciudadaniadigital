@@ -310,7 +310,7 @@
     /* ====== MEMORY GAME ====== */
     .memory-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 10px;
       margin: 16px 0;
     }
@@ -560,7 +560,7 @@
 
     /* Responsive */
     @media (max-width: 480px) {
-      .memory-grid { grid-template-columns: repeat(4, 1fr); gap: 7px; }
+      .memory-grid { grid-template-columns: repeat(3, 1fr); gap: 7px; }
       .semaforo-btns { flex-direction: column; }
       .sem-btn { flex-direction: row; justify-content: center; padding: 12px 16px; }
     }
