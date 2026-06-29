@@ -175,107 +175,69 @@ function boardPathD() {
   return d;
 }
 
+// Posiciones de los 5 nodos sobre la imagen mapa (en porcentaje del ancho/alto)
+// Detectadas visualmente sobre SPRITES.png (2000x1414)
+const MAP_NODES_PCT = [
+  { px: 53.5, py: 29.5 },  // Zona 1: casilla verde
+  { px: 12.5, py: 48.5 },  // Zona 2: casilla rosa
+  { px: 88.8, py: 45.0 },  // Zona 3: casilla amarilla
+  { px: 64.0, py: 67.6 },  // Zona 4: casilla beige
+  { px: 49.0, py: 87.0 },  // Zona 5: casilla roja
+];
+
 function renderMap() {
   const pct = (state.completed.length / ZONES.length) * 100;
   document.getElementById('main-progress').style.width = pct + '%';
+
+  const mapEl = document.getElementById('island-map');
+  const W = 700, H = 495; // ratio 2000/1414
 
   const nodesSvg = ZONES.map((zone, idx) => {
     const isDone = state.completed.includes(zone.id);
     const isAvailable = idx === 0 || state.completed.includes(ZONES[idx-1].id);
     const isLocked = !isAvailable && !isDone;
-    const pos = BOARD_NODES[idx];
+    const n = MAP_NODES_PCT[idx];
+    const cx = Math.round(n.px / 100 * W);
+    const cy = Math.round(n.py / 100 * H);
+    const r = 28;
+
     const cls = 'board-node' + (isLocked ? ' locked' : '') + (isDone ? ' completed' : '');
     const clickAttr = isLocked ? '' : `onclick="startZone(ZONES[${idx}])"`;
     const onEnter = `onmouseenter="showZoneDetail(${idx})"`;
 
     let badge = '';
     if (isDone) {
-      badge = `<circle class="board-node-badge-bg board-node-check-bg" cx="${pos.x+22}" cy="${pos.y-22}" r="11"/>
-                <text class="board-node-badge" x="${pos.x+22}" y="${pos.y-21}" fill="white">✓</text>`;
+      badge = `<circle class="board-node-badge-bg board-node-check-bg" cx="${cx+20}" cy="${cy-20}" r="10"/>
+               <text class="board-node-badge" x="${cx+20}" y="${cy-19}" fill="white">✓</text>`;
     } else if (isLocked) {
-      badge = `<circle class="board-node-badge-bg board-node-lock-bg" cx="${pos.x+22}" cy="${pos.y-22}" r="11"/>
-                <text class="board-node-badge" x="${pos.x+22}" y="${pos.y-21}" fill="white">🔒</text>`;
+      badge = `<circle class="board-node-badge-bg board-node-lock-bg" cx="${cx+20}" cy="${cy-20}" r="10"/>
+               <text class="board-node-badge" x="${cx+20}" y="${cy-19}" fill="white">🔒</text>`;
     }
+
+    const nodeColor = isDone ? '#27ae60' : isLocked ? 'rgba(255,255,255,0.45)' : 'white';
+    const strokeColor = isDone ? '#f0b429' : isLocked ? 'rgba(0,0,0,0.2)' : zone.color;
+    const strokeW = isDone ? 4 : 2;
 
     return `
       <g class="${cls}" ${clickAttr} ${onEnter} tabindex="0" role="button" aria-label="${zone.title}">
-        <circle class="board-node-circle" cx="${pos.x}" cy="${pos.y}" r="30"></circle>
-        <text class="board-node-icon" x="${pos.x}" y="${pos.y+1}">${zone.icon}</text>
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="${nodeColor}" stroke="${strokeColor}" stroke-width="${strokeW}" class="board-node-circle"/>
+        <text class="board-node-icon" x="${cx}" y="${cy+1}" style="font-size:1.3rem">${zone.icon}</text>
         ${badge}
-        <text class="board-node-label" x="${pos.x}" y="${pos.y+48}">Zona ${zone.id}</text>
+        <text class="board-node-label" x="${cx}" y="${cy + r + 14}">Zona ${zone.id}</text>
       </g>`;
   }).join('');
 
-  const mapEl = document.getElementById('island-map');
   mapEl.innerHTML = `
-    <svg class="board-svg" viewBox="0 0 700 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mapa de la Isla del Tesoro">
-      <defs>
-        <pattern id="oceanDots" width="46" height="46" patternUnits="userSpaceOnUse">
-          <circle cx="6" cy="6" r="1.4" fill="rgba(255,255,255,0.06)"/>
-          <circle cx="30" cy="22" r="1.1" fill="rgba(255,255,255,0.05)"/>
-        </pattern>
-      </defs>
-
-      <!-- Océano de fondo -->
-      <rect x="0" y="0" width="700" height="560" fill="#0a3d62"/>
-      <rect x="0" y="0" width="700" height="560" fill="url(#oceanDots)"/>
-
-      <!-- Isla superior izquierda (inicio) -->
-      <path d="M0,0 L210,0 Q230,60 170,110 Q120,150 60,150 Q10,150 0,120 Z" fill="#3a8c4e"/>
-      <path d="M0,0 L210,0 Q225,55 175,100 Q125,140 65,142" fill="none" stroke="#dfc89a" stroke-width="10" opacity="0.55"/>
-      <circle cx="35" cy="35" r="20" fill="#2c6b3a"/>
-      <circle cx="60" cy="25" r="16" fill="#347a42"/>
-      <rect x="32" y="40" width="6" height="16" fill="#5c3414"/>
-
-      <!-- Isla superior derecha (volcán) -->
-      <path d="M700,0 L520,0 Q500,60 560,100 Q610,135 660,130 Q700,125 700,90 Z" fill="#3a8c4e"/>
-      <path d="M700,0 L520,0 Q505,55 565,95" fill="none" stroke="#dfc89a" stroke-width="10" opacity="0.55"/>
-      <polygon points="630,95 600,40 660,40" fill="#5c4536"/>
-      <polygon points="612,95 600,68 624,68" fill="#e05a2b"/>
-      <ellipse cx="600" cy="28" rx="14" ry="8" fill="rgba(255,255,255,0.5)"/>
-
-      <!-- Isla inferior derecha (cofre) -->
-      <path d="M700,560 L480,560 Q460,500 530,460 Q610,415 700,425 Z" fill="#3a8c4e"/>
-      <path d="M700,560 L480,560 Q463,500 535,463" fill="none" stroke="#dfc89a" stroke-width="10" opacity="0.55"/>
-
-      <!-- Olas decorativas en mar abierto -->
-      <path d="M390,270 Q420,258 450,270 T510,273" stroke="rgba(255,255,255,0.12)" stroke-width="4" fill="none"/>
-      <path d="M400,300 Q430,290 460,300 T520,303" stroke="rgba(255,255,255,0.09)" stroke-width="4" fill="none"/>
-
-      <!-- Barquito -->
-      <g transform="translate(150,470)">
-        <ellipse cx="0" cy="18" rx="34" ry="8" fill="rgba(255,255,255,0.15)"/>
-        <path d="M-26,12 Q0,28 26,12 L18,2 L-18,2 Z" fill="#a9692f"/>
-        <line x1="0" y1="2" x2="0" y2="-26" stroke="#5c3414" stroke-width="3"/>
-        <path d="M0,-24 L0,2 L20,2 Z" fill="#f4ede1"/>
-      </g>
-
-      <!-- Camino entre casillas -->
-      <path d="${boardPathD()}" fill="none" stroke="#dfc89a" stroke-width="8" stroke-dasharray="2 14" stroke-linecap="round" opacity="0.85"/>
-
-      <!-- Nodo de inicio -->
-      <g>
-        <ellipse cx="${BOARD_START.x}" cy="${BOARD_START.y}" rx="38" ry="26" fill="white"/>
-        <text class="board-start-label" x="${BOARD_START.x}" y="${BOARD_START.y+5}">INICIO</text>
-      </g>
-
-      <!-- Cofre del tesoro al final -->
-      <g transform="translate(${BOARD_NODES[4].x + 90}, ${BOARD_NODES[4].y + 25})">
-        <circle r="40" fill="white"/>
-        <g transform="translate(-20,-15) scale(0.8)">
-          <ellipse cx="20" cy="13" rx="22" ry="6" fill="#3a200c"/>
-          <rect x="0" y="14" width="40" height="18" rx="4" fill="#a9692f" stroke="#5c3414" stroke-width="1.5"/>
-          <path d="M0,15 Q0,0 20,0 Q40,0 40,15 Z" fill="#c98a3e" stroke="#5c3414" stroke-width="1.5"/>
-          <rect x="16" y="6" width="8" height="6" rx="1.5" fill="#f4c430"/>
-        </g>
-      </g>
-
+    <svg class="board-svg" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"
+         role="img" aria-label="Mapa de la Isla del Tesoro">
+      <image href="mapa.png" x="0" y="0" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice"/>
       ${nodesSvg}
     </svg>
   `;
 
   showZoneDetail(firstActionableZoneIdx());
 }
+
 
 function firstActionableZoneIdx() {
   for (let idx = 0; idx < ZONES.length; idx++) {
