@@ -1264,9 +1264,9 @@ const DND_ITEMS_POOL = [
 ];
 
 const DND_CATEGORIES = [
-  { id: 'derecho', label: '🛡️ Mis derechos digitales', css: 'cat-derecho' },
-  { id: 'vulneracion', label: '⚠️ Vulneraciones (delitos)', css: 'cat-vulneracion' },
-  { id: 'proteccion', label: '✅ Acciones de protección', css: 'cat-proteccion' },
+  { id: 'derecho', label: '🛡️ Mis derechos digitales', css: 'cat-derecho', image: 'zona4_derecho.png' },
+  { id: 'vulneracion', label: '⚠️ Vulneraciones (delitos)', css: 'cat-vulneracion', image: 'zona4_vulneracion.png' },
+  { id: 'proteccion', label: '✅ Acciones de protección', css: 'cat-proteccion', image: 'zona4_proteccion.png' },
 ];
 
 const DND_ARTICLES = {
@@ -1301,24 +1301,24 @@ function renderDnD() {
   const body = document.getElementById('game-body');
   body.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
-      <div style="display:flex;align-items:flex-start;gap:10px;background:#cce7f9;border-radius:10px;padding:10px 12px">
-        <span style="font-size:1.2rem;flex-shrink:0">🛡️</span>
+      <div style="display:flex;align-items:center;gap:10px;background:#cce7f9;border-radius:10px;padding:10px 12px">
+        <img src="zona4_derecho.png" alt="Derecho digital" style="width:48px;height:48px;object-fit:cover;border-radius:8px;flex-shrink:0" onerror="this.style.display='none'"/>
         <div>
-          <strong style="font-size:0.82rem;color:#0d4d7a;display:block">Derecho digital</strong>
+          <strong style="font-size:0.82rem;color:#0d4d7a;display:block">🛡️ Derecho digital</strong>
           <span style="font-size:0.78rem;color:#1a5080;line-height:1.4">Lo que la ley te garantiza en internet: acceder a tus datos, proteger tu privacidad, decidir qué compartes.</span>
         </div>
       </div>
-      <div style="display:flex;align-items:flex-start;gap:10px;background:#fde8e6;border-radius:10px;padding:10px 12px">
-        <span style="font-size:1.2rem;flex-shrink:0">⚠️</span>
+      <div style="display:flex;align-items:center;gap:10px;background:#fde8e6;border-radius:10px;padding:10px 12px">
+        <img src="zona4_vulneracion.png" alt="Vulneración" style="width:48px;height:48px;object-fit:cover;border-radius:8px;flex-shrink:0" onerror="this.style.display='none'"/>
         <div>
-          <strong style="font-size:0.82rem;color:#c0392b;display:block">Vulneración</strong>
+          <strong style="font-size:0.82rem;color:#c0392b;display:block">⚠️ Vulneración</strong>
           <span style="font-size:0.78rem;color:#922b21;line-height:1.4">Una acción que viola tus derechos o los de otra persona. Puede ser un delito.</span>
         </div>
       </div>
-      <div style="display:flex;align-items:flex-start;gap:10px;background:#d4edda;border-radius:10px;padding:10px 12px">
-        <span style="font-size:1.2rem;flex-shrink:0">✅</span>
+      <div style="display:flex;align-items:center;gap:10px;background:#d4edda;border-radius:10px;padding:10px 12px">
+        <img src="zona4_proteccion.png" alt="Acción de protección" style="width:48px;height:48px;object-fit:cover;border-radius:8px;flex-shrink:0" onerror="this.style.display='none'"/>
         <div>
-          <strong style="font-size:0.82rem;color:#1a5c2e;display:block">Acción de protección</strong>
+          <strong style="font-size:0.82rem;color:#1a5c2e;display:block">✅ Acción de protección</strong>
           <span style="font-size:0.78rem;color:#1a5c2e;line-height:1.4">Lo que puedes hacer para defender tus derechos o los de alguien más cuando están en riesgo.</span>
         </div>
       </div>
