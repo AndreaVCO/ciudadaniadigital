@@ -938,47 +938,176 @@ function renderSemaforo() {
   }
   const s = semScenarios[semIdx];
   const body = document.getElementById('game-body');
+
+  // imagenb.png tiene 3 paneles lado a lado: verde (izq), amarillo (centro), rojo (der)
+  // Usamos object-position para mostrar solo el panel correspondiente en cada tarjeta
+  const cards = [
+    {
+      color: 'verde',
+      bg: '#2ecc71',
+      border: '#27ae60',
+      lightBg: '#d4edda',
+      dot: '#27ae60',
+      label: 'LEGAL',
+      sub: 'Seguro ✓',
+      imgPos: '0% center',
+    },
+    {
+      color: 'amarillo',
+      bg: '#f0b429',
+      border: '#d4a017',
+      lightBg: '#fef6dc',
+      dot: '#f0b429',
+      label: 'RIESGO ÉTICO',
+      sub: 'Con cuidado ⚠️',
+      imgPos: '50% center',
+    },
+    {
+      color: 'rojo',
+      bg: '#e74c3c',
+      border: '#c0392b',
+      lightBg: '#fde8e6',
+      dot: '#e74c3c',
+      label: 'ILEGAL',
+      sub: 'Peligroso ✗',
+      imgPos: '100% center',
+    },
+  ];
+
   body.innerHTML = `
-    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
-      <div style="display:flex;align-items:flex-start;gap:10px;background:#d4edda;border-radius:10px;padding:10px 12px">
-        <span style="font-size:1.2rem;flex-shrink:0">🟢</span>
-        <div>
-          <strong style="font-size:0.82rem;color:#1a5c2e;display:block">Legal</strong>
-          <span style="font-size:0.78rem;color:#1a5c2e;line-height:1.4">Conducta permitida y respetuosa. Está dentro de la ley y cuida los derechos de todos.</span>
-        </div>
+    <style>
+      .sem2-wrap { font-family: 'Nunito', sans-serif; }
+      .sem2-header {
+        background: linear-gradient(135deg, #1a2e4a, #0d3d6e);
+        border-radius: 14px 14px 0 0;
+        padding: 12px 16px 10px;
+        text-align: center;
+        margin-bottom: 0;
+      }
+      .sem2-header h2 {
+        font-family: 'Fredoka One', cursive;
+        color: #fff;
+        font-size: 1.4rem;
+        margin: 0 0 2px;
+        letter-spacing: 0.5px;
+      }
+      .sem2-header h2 span { color: #f0b429; }
+      .sem2-header p { color: rgba(255,255,255,0.7); font-size: 0.78rem; margin: 0; }
+      .sem2-cards {
+        display: flex;
+        gap: 8px;
+        background: linear-gradient(135deg, #1a2e4a, #0d3d6e);
+        padding: 10px 10px 14px;
+        border-radius: 0 0 14px 14px;
+        margin-bottom: 14px;
+      }
+      .sem2-card {
+        flex: 1;
+        border-radius: 14px;
+        border: 3px solid #ccc;
+        overflow: hidden;
+        cursor: pointer;
+        transition: transform 0.15s, box-shadow 0.15s;
+        position: relative;
+        background: white;
+      }
+      .sem2-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+      .sem2-card:active { transform: translateY(0); }
+      .sem2-dot {
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        margin: -14px auto 6px;
+        position: relative;
+        z-index: 2;
+        border: 3px solid white;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      }
+      .sem2-img-wrap {
+        width: 100%;
+        height: 120px;
+        overflow: hidden;
+        position: relative;
+      }
+      .sem2-img-wrap img {
+        position: absolute;
+        height: 100%;
+        width: 300%;
+        object-fit: cover;
+        top: 0;
+      }
+      .sem2-img-wrap img.pos-verde  { left: 0; }
+      .sem2-img-wrap img.pos-amarillo { left: -100%; }
+      .sem2-img-wrap img.pos-rojo   { left: -200%; }
+      .sem2-label {
+        font-family: 'Fredoka One', cursive;
+        font-size: 0.85rem;
+        text-align: center;
+        padding: 6px 4px 8px;
+        line-height: 1.2;
+      }
+      .sem2-sublabel {
+        font-size: 0.68rem;
+        font-weight: 700;
+        display: block;
+        opacity: 0.75;
+      }
+      .sem2-situation {
+        background: white;
+        border-radius: 14px;
+        padding: 16px 18px;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.10);
+        margin-bottom: 10px;
+      }
+      .sem2-situation-label {
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #888;
+        margin-bottom: 6px;
+      }
+      .sem2-situation-text {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1a2e4a;
+        line-height: 1.5;
+      }
+      .sem2-counter {
+        text-align: center;
+        font-size: 0.78rem;
+        color: #888;
+        margin-bottom: 4px;
+      }
+    </style>
+
+    <div class="sem2-wrap">
+      <div class="sem2-header">
+        <h2>🚦 Semáforo <span>Digital</span></h2>
+        <p>Lee la situación y elige el color que corresponde</p>
       </div>
-      <div style="display:flex;align-items:flex-start;gap:10px;background:#fef6dc;border-radius:10px;padding:10px 12px">
-        <span style="font-size:1.2rem;flex-shrink:0">🟡</span>
-        <div>
-          <strong style="font-size:0.82rem;color:#7a5500;display:block">Riesgo ético</strong>
-          <span style="font-size:0.78rem;color:#7a5500;line-height:1.4">No es un delito, pero puede causar daño. Hay que pensarlo dos veces antes de actuar.</span>
-        </div>
+
+      <div class="sem2-cards">
+        ${cards.map(c => `
+          <div class="sem2-card" style="border-color:${c.border}" onclick="answerSemaforo('${c.color}')">
+            <div class="sem2-img-wrap" style="background:${c.lightBg}">
+              <img src="imagenb.png" class="pos-${c.color}" alt="${c.label}"/>
+            </div>
+            <div class="sem2-dot" style="background:${c.dot}"></div>
+            <div class="sem2-label" style="color:${c.border}">
+              ${c.label}
+              <span class="sem2-sublabel">${c.sub}</span>
+            </div>
+          </div>
+        `).join('')}
       </div>
-      <div style="display:flex;align-items:flex-start;gap:10px;background:#fde8e6;border-radius:10px;padding:10px 12px">
-        <span style="font-size:1.2rem;flex-shrink:0">🔴</span>
-        <div>
-          <strong style="font-size:0.82rem;color:#c0392b;display:block">Ilegal</strong>
-          <span style="font-size:0.78rem;color:#922b21;line-height:1.4">Viola la ley y puede tener consecuencias penales. Está sancionado en Ecuador.</span>
-        </div>
+
+      <div class="sem2-counter">Situación ${semIdx + 1} de ${semScenarios.length}</div>
+
+      <div class="sem2-situation">
+        <div class="sem2-situation-label">🚦 ¿Cómo clasificas esta conducta?</div>
+        <div class="sem2-situation-text">${s.text}</div>
       </div>
     </div>
-    <div style="font-size:0.82rem;color:#666;margin-bottom:8px">Situación ${semIdx+1} de ${semScenarios.length}</div>
-    <div class="semaforo-scenario">
-      <div class="scenario-label">🚦 ¿Cómo clasificas esta conducta?</div>
-      <div class="scenario-text">${s.text}</div>
-      <div class="semaforo-btns">
-        <button class="sem-btn sem-verde" onclick="answerSemaforo('verde')">
-          🟢 <span class="sem-label">Legal</span>
-        </button>
-        <button class="sem-btn sem-amarillo" onclick="answerSemaforo('amarillo')">
-          🟡 <span class="sem-label">Riesgo ético</span>
-        </button>
-        <button class="sem-btn sem-rojo" onclick="answerSemaforo('rojo')">
-          🔴 <span class="sem-label">Ilegal</span>
-        </button>
-      </div>
-    </div>
-    <div style="font-size:0.82rem;color:#666;text-align:center">Clasifica la conducta según su impacto legal y ético.</div>
   `;
 }
 
