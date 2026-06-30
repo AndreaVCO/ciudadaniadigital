@@ -1126,66 +1126,77 @@ function answerSemaforo(color) {
 // =============================================
 const VF_QUESTIONS_POOL = [
   {
+    image: "zona3_situacion1.png",
     claim: "Si algo está publicado en internet es información verdadera porque 'alguien la subió'.",
     answer: false,
     article: "UNESCO – Alfabetización Mediática e Informacional: la fuente importa. Cualquier persona puede publicar información falsa en internet. Es fundamental verificar la fuente y contrastar datos.",
     explanation: "FALSO. Cualquier persona puede publicar contenido en internet, incluyendo información falsa o engañosa. Siempre debes verificar la fuente y contrastar con medios o entidades confiables."
   },
   {
+    image: "zona3_situacion2.png",
     claim: "Tus datos personales en internet (nombre, foto, ubicación) son un tipo de propiedad que te pertenece.",
     answer: true,
     article: "Art. 66, num. 19 Constitución del Ecuador y LOPDP: tus datos personales son tu propiedad y tienes derecho a controlar quién los usa, cómo y para qué.",
     explanation: "VERDADERO. La Constitución del Ecuador y la Ley de Protección de Datos reconocen tus datos personales como un activo que te pertenece. Puedes solicitar que sean eliminados o corregidos."
   },
   {
+    image: "zona3_situacion3.png",
     claim: "Un meme con información falsa sobre una persona famosa es inofensivo porque es 'solo humor'.",
     answer: false,
     article: "La difamación e injuria no son delitos penales en Ecuador desde 2014, pero un meme con información falsa que daña la reputación de alguien puede derivar en una contravención por descrédito o deshonra (Art. 396 núm. 1 COIP) o en una demanda civil por daño moral. Si además le atribuye falsamente un delito, puede ser Calumnia (Art. 182 COIP).",
     explanation: "FALSO. Un meme con información falsa puede dañar la reputación de una persona y tener consecuencias legales. El humor no justifica difundir mentiras sobre otras personas."
   },
   {
+    image: "zona3_situacion4.png",
     claim: "En Ecuador, hacer clic en 'aceptar' en los términos y condiciones de una app significa que leíste y aprobaste cómo usarán tus datos.",
     answer: false,
     article: "LOPDP, Art. 20 – Consentimiento informado: para que el consentimiento sea válido, debes haber recibido información clara y comprensible sobre el tratamiento de tus datos.",
     explanation: "FALSO. En la práctica, casi nadie lee los términos y condiciones. La ley exige que el consentimiento sea informado, pero muchas apps no cumplen con esto. Siempre intenta revisar qué permisos concedes."
   },
   {
+    image: "zona3_situacion5.png",
     claim: "Si recibes un mensaje que dice 'Comparte esto o le pasará algo malo a tu familia', puedes ignorarlo sin problema.",
     answer: true,
     article: "Desinformación y cadenas: los mensajes de cadena son una forma común de desinformación y manipulación emocional en redes sociales. No tienen efecto real al ignorarlos.",
     explanation: "VERDADERO. Los mensajes de cadena son una táctica de desinformación y manipulación. No tienen ningún efecto si los ignoras. Lo correcto es no reenviarlos y reportarlos como spam."
   },
   {
+    image: "zona3_situacion6.png",
     claim: "Una imagen puede ser editada para cambiar su contexto y crear desinformación, incluso con fotos reales.",
     answer: true,
     article: "Fact-checking y alfabetización mediática: la manipulación de imágenes reales fuera de su contexto original es una técnica muy usada para crear noticias falsas (fake news).",
     explanation: "VERDADERO. Una foto real puede ser usada fuera de contexto para crear una noticia falsa. Siempre verifica la fuente original de las imágenes antes de compartirlas."
   },
   {
+    image: "zona3_situacion7.png",
     claim: "Borrar una publicación significa que esa información desaparece de internet por completo.",
     answer: false,
     article: "Principio de permanencia digital: una vez publicado, el contenido puede haber sido guardado o capturado por otras personas antes de borrarlo. El borrado no garantiza su eliminación total.",
     explanation: "FALSO. Aunque borres una publicación, otras personas pudieron haberla guardado, compartido o capturado antes. Piensa bien antes de publicar."
   },
   {
+    image: "zona3_situacion8.png",
     claim: "En Ecuador, puedes pedirle a una empresa que elimine tus datos personales de su sistema.",
     answer: true,
     article: "LOPDP, Art. 9 – Derecho de supresión: toda persona puede solicitar la eliminación de sus datos personales cuando ya no sean necesarios o se haya retirado el consentimiento.",
     explanation: "VERDADERO. La LOPDP te da el derecho de solicitar que tus datos sean eliminados de las bases de datos de empresas o plataformas."
   },
   {
+    image: "zona3_situacion9.png",
     claim: "Un 'me gusta' o comentario en redes sociales nunca puede usarse como evidencia legal.",
     answer: false,
     article: "Pruebas digitales: capturas de pantalla, comentarios y mensajes pueden usarse como evidencia en una denuncia ante la Fiscalía si están relacionados con un delito.",
     explanation: "FALSO. Comentarios, mensajes y capturas de pantalla sí pueden usarse como evidencia digital en procesos legales. Por eso es importante guardarlos."
   },
   {
+    image: "zona3_situacion10.png",
     claim: "Si una persona menor de edad comete un delito digital (como crear un perfil falso de otra persona), no tiene ninguna responsabilidad porque es menor de edad.",
     answer: false,
     article: "Código de la Niñez y Adolescencia y COIP: los y las adolescentes pueden tener responsabilidad penal juvenil según su edad, aplicada de forma diferenciada a la de los adultos, pero no quedan exentos.",
     explanation: "FALSO. Los y las adolescentes también pueden enfrentar consecuencias legales (responsabilidad penal juvenil) por delitos digitales, aunque el proceso es diferente al de un adulto."
   },
   {
+    image: "zona3_situacion11.png",
     claim: "Las cuentas verificadas (con la insignia azul) siempre publican información 100% verdadera.",
     answer: false,
     article: "Alfabetización mediática: la verificación de cuenta certifica identidad, no la veracidad de cada contenido publicado. Cualquier cuenta puede compartir información incorrecta.",
@@ -1212,7 +1223,7 @@ function renderVF() {
   body.innerHTML = `
     <div style="font-size:0.82rem;color:#fff;margin-bottom:6px;text-align:center">Pregunta ${vfIdx+1} de ${vfQuestions.length}</div>
     <div class="tf-card">
-      <img src="imagenc.png" alt="Verdadero o Falso" style="width:100%;max-width:420px;display:block;margin:0 auto 16px;border-radius:10px"/>
+      <img src="${q.image || 'imagenc.png'}" alt="Verdadero o Falso" style="width:100%;max-width:420px;display:block;margin:0 auto 16px;border-radius:10px" onerror="this.onerror=null;this.src='imagenc.png';"/>
       <div class="tf-claim">${q.claim}</div>
       <div class="tf-btns">
         <button class="tf-btn tf-true" onclick="answerVF(true)">✅ Verdadero</button>
