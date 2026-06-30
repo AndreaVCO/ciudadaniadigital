@@ -446,13 +446,13 @@ function showZoneDetail(idx) {
 
 // =================== FEEDBACK ===================
 let feedbackCallback = null;
-function showFeedback(isCorrect, article, explanation, cb) {
+function showFeedback(isCorrect, article, explanation, cb, label) {
   const overlay = document.getElementById('feedback-overlay');
   document.getElementById('fb-icon').textContent = isCorrect ? '🎉' : '💡';
   const title = document.getElementById('fb-title');
   title.textContent = isCorrect ? '¡Correcto!' : 'Aprendamos de esto';
   title.className = 'feedback-title ' + (isCorrect ? 'correct' : 'wrong');
-  document.getElementById('fb-article').innerHTML = `<strong>📋 Marco Legal</strong>${article}`;
+  document.getElementById('fb-article').innerHTML = `<strong>${label || '📋 Marco Legal'}</strong>${article}`;
   document.getElementById('fb-explanation').textContent = explanation;
   feedbackCallback = cb;
   overlay.classList.add('show');
@@ -536,7 +536,7 @@ const PROTOCOLS = {
       "Informa a un adulto de confianza (madre, padre, tutor/a, docente).",
       "Si tienes menos de 18 años, el MIES o DINAPEN puede orientarte.",
     ],
-    contacts: ["Fiscalía: 1800-DELITO", "DINAPEN: 101", "MIES: 1800-4-MIES", "ECU911: 911"]
+    contacts: ["ECU911: 911 (pide la unidad DINAPEN)", "Denuncia: portal de Fiscalía o acude en persona", "MIES: 1800-002-002"]
   },
   2: {
     title: "Protección de datos y relaciones digitales",
@@ -549,7 +549,7 @@ const PROTOCOLS = {
       "Denuncia: acude a la Fiscalía, la Unidad de Ciberdelitos de la Policía Nacional o usa la plataforma en línea de la Fiscalía.",
       "Si fue en redes sociales: reporta la cuenta en la plataforma, solicita eliminación del contenido y guarda confirmación del reporte.",
     ],
-    contacts: ["Fiscalía: 1800-DELITO", "Policía Nacional: 101", "ECU911: 911", "Defensoría del Pueblo: 1800-PUEBLO"]
+    contacts: ["ECU911: 911", "Denuncia: portal de Fiscalía o Unidad de Flagrancia", "1800-DELITO: solo para dar información anónima, no para denunciar"]
   },
   3: {
     title: "¿Fuiste víctima de desinformación o fraude digital?",
@@ -561,7 +561,7 @@ const PROTOCOLS = {
       "Reporta fraudes bancarios a la Superintendencia de Bancos.",
       "Informa a tu familia y advierte a otros usuarios para evitar que sean víctimas.",
     ],
-    contacts: ["Fiscalía: 1800-DELITO", "Superbancos: 1800-SUPERB", "ARCOTEL: arcotel.gob.ec", "ECU911: 911"]
+    contacts: ["Denuncia: portal de Fiscalía o en persona", "Superintendencia de Bancos: 1800-325826", "ARCOTEL: 1800-567-567", "ECU911: 911"]
   },
   4: {
     title: "¿Vulneraron tus derechos digitales?",
@@ -573,7 +573,7 @@ const PROTOCOLS = {
       "Presenta una denuncia ante la Autoridad de Protección de Datos Personales del Ecuador.",
       "Si hay delito penal, acude a la Fiscalía General del Estado.",
     ],
-    contacts: ["Fiscalía: 1800-DELITO", "Defensoría del Pueblo: 1800-PUEBLO", "SNAP (datos): protecciondatos.gob.ec", "ECU911: 911"]
+    contacts: ["Denuncia: portal de Fiscalía o en persona", "Defensoría del Pueblo: acude a una oficina o defensoria.gob.ec", "SNAP (datos): protecciondatos.gob.ec", "ECU911: 911"]
   },
   5: {
     title: "Protocolo General de Ciudadanía Digital",
@@ -585,7 +585,7 @@ const PROTOCOLS = {
       "Usa los canales oficiales de denuncia según el tipo de vulneración.",
       "Comparte lo aprendido con tus compañeros/as para crear una comunidad digital más segura.",
     ],
-    contacts: ["Fiscalía: 1800-DELITO", "ECU911: 911", "DINAPEN: 101", "MIES: 1800-4-MIES"]
+    contacts: ["ECU911: 911 (pide la unidad DINAPEN)", "Denuncia: portal de Fiscalía o en persona", "MIES: 1800-002-002"]
   }
 };
 
@@ -644,28 +644,28 @@ function pickRandom(pool, n) {
 // ===== ZONA 1: MEMORIA ======================
 // =============================================
 const MEMORY_PAIRS = [
-  { term: "📍 Comparto mi ubicación en una historia", def: "⚠️ Un desconocido puede saber dónde estoy",
-    article: "LOPDP, Art. 10 – Principio de seguridad: tu ubicación es un dato sensible. Compartirla sin cuidado puede exponerte a situaciones de riesgo real." },
-  { term: "🤳 Publico una foto mía sin revisar la privacidad", def: "⚠️ Esa imagen puede quedarse en internet para siempre",
-    article: "Art. 178 COIP – Violación a la intimidad: publicar imágenes propias o ajenas sin consentimiento puede tener consecuencias legales y personales permanentes." },
-  { term: "🔐 Uso la misma contraseña para todo", def: "⚠️ Si hackean una cuenta, pierdo el acceso a todas",
-    article: "Art. 66, numeral 19 de la Constitución del Ecuador: tus datos están protegidos. Una contraseña robada puede derivar en suplantación de identidad (Art. 212 COIP)." },
-  { term: "📱 Doy mi número a alguien que conocí en línea", def: "⚠️ Pueden contactarme sin mi permiso o acosarme",
-    article: "LOPDP, Art. 10 – Principio de confidencialidad: tu número de teléfono es un dato personal. Compartirlo sin control puede exponerte a acoso o fraude." },
-  { term: "📧 Uso mi correo personal para registrarme en todo", def: "⚠️ Mi identidad puede ser suplantada o mi cuenta robada",
-    article: "Art. 212 COIP – Suplantación de identidad: usar el correo de otra persona para hacerse pasar por ella es un delito penado en Ecuador." },
-  { term: "💬 Comparto información personal en un chat grupal", def: "⚠️ No sabes quién más puede ver o usar esa información",
-    article: "LOPDP, Art. 10 – Principio de consentimiento: antes de compartir información personal en línea, piensa en las consecuencias. La ley te da el derecho a decidir." },
-  { term: "🌐 Acepto solicitudes de amistad de gente que no conozco", def: "⚠️ Le doy acceso a mi información a un extraño",
-    article: "LOPDP, Art. 7 – Autodeterminación informativa: decidir quién ve tu información es un derecho. Aceptar desconocidos amplía quién puede acceder a tus datos." },
-  { term: "🎮 Descargo apps o juegos piratas sin revisar su origen", def: "⚠️ Pueden tener virus y robar mis datos sin que lo note",
-    article: "Art. 234 COIP – Ataques a la integridad de sistemas informáticos: muchas apps no oficiales distribuyen programas maliciosos que comprometen tu información." },
-  { term: "🕵️ Reviso el celular de mi pareja o amigo/a sin permiso", def: "⚠️ Estoy violando su privacidad aunque confíe en mí",
-    article: "Constitución del Ecuador, Art. 66 num. 21: el secreto de las comunicaciones es un derecho. Ninguna relación de confianza lo anula." },
-  { term: "🎥 Grabo a alguien sin que lo sepa y lo subo a redes", def: "⚠️ Puede ser un delito aunque diga que es 'broma'",
-    article: "Art. 178 COIP – Violación a la intimidad: grabar o difundir a una persona sin su consentimiento está sancionado, sin importar la intención." },
-  { term: "🛒 Comparto los datos de la tarjeta de mis padres para comprar en línea", def: "⚠️ Pueden robar el dinero o usar esos datos sin autorización",
-    article: "Art. 190 COIP – Apropiación fraudulenta por medios electrónicos: compartir datos financieros, incluso sin mala intención, abre la puerta a un fraude." },
+  { icon1: "🔑", term: "Compartir contraseña", icon2: "🕵️", def: "Cuenta hackeada",
+    article: "Constitución, Art. 66 num. 19: tus datos están protegidos. Compartir tu contraseña, incluso con alguien de confianza, abre la puerta a que otros entren a tu cuenta sin control." },
+  { icon1: "🔐", term: "Usar la misma contraseña en todo", icon2: "🔓", def: "Acceso a múltiples cuentas",
+    article: "Art. 212 COIP – Suplantación de identidad: si hackean una cuenta y usas la misma clave en todas, el atacante puede entrar a todas tus cuentas con un solo dato." },
+  { icon1: "🌐", term: "Aceptar solicitudes de desconocidos", icon2: "🐺", def: "Acoso o grooming",
+    article: "LOPDP, Art. 7 – Autodeterminación informativa: decidir quién ve tu información es un derecho. Aceptar desconocidos te expone a manipulación o acoso (grooming)." },
+  { icon1: "📍", term: "Publicar ubicación en tiempo real", icon2: "👁️", def: "Riesgo de seguimiento",
+    article: "LOPDP, Art. 10 – Principio de seguridad: tu ubicación es un dato sensible. Compartirla en tiempo real permite que alguien sepa exactamente dónde estás." },
+  { icon1: "🎣", term: "Hacer clic en enlaces sospechosos", icon2: "🗃️", def: "Robo de datos personales",
+    article: "Art. 190 COIP – Apropiación fraudulenta por medios electrónicos: los enlaces de phishing imitan sitios reales para engañarte y robar tus datos personales o financieros." },
+  { icon1: "📲", term: "Descargar apps de sitios no oficiales", icon2: "🦠", def: "Instalación de malware",
+    article: "Art. 232 COIP – Ataque a la integridad de sistemas informáticos: las apps fuera de tiendas oficiales pueden traer virus que dañan o roban tu información sin que lo notes." },
+  { icon1: "🤳", term: "Participar en retos virales peligrosos", icon2: "🚑", def: "Daño físico o exposición riesgosa",
+    label: "💡 Dato clave",
+    article: "Muchos retos virales priorizan las vistas y los 'likes' sobre tu seguridad real. Antes de participar, pregúntate si vale la pena el riesgo." },
+  { icon1: "🔥", term: "Enviar fotos íntimas", icon2: "📤", def: "Difusión sin consentimiento",
+    article: "Art. 178 COIP – Violación a la intimidad: una vez enviada una imagen, pierdes el control sobre ella. Compartirla sin tu permiso es un delito." },
+  { icon1: "🔓", term: "No configurar privacidad en redes", icon2: "📢", def: "Exposición de información personal",
+    article: "LOPDP, Art. 4: si no configuras tu privacidad, cualquier persona puede ver y usar tus datos personales, no solo tus contactos." },
+  { icon1: "📰", term: "Creer en noticias falsas sin verificar", icon2: "❌", def: "Desinformación y malas decisiones",
+    label: "💡 Dato clave",
+    article: "Verificar la fuente antes de compartir o creer una noticia evita que tomes decisiones basadas en información falsa, y previene que ayudes a difundirla." },
 ];
 
 let memFlipped = [];
@@ -680,8 +680,8 @@ function startMemory() {
   memPlayCount = pairs.length;
   const items = [];
   pairs.forEach((p, i) => {
-    items.push({ id: i, side: 'term', text: p.term, match: i, article: p.article, defText: p.def });
-    items.push({ id: i + pairs.length, side: 'def', text: p.def, match: i, article: p.article, termText: p.term });
+    items.push({ id: i, side: 'term', icon: p.icon1, text: p.term, match: i, article: p.article, defText: p.def });
+    items.push({ id: i + pairs.length, side: 'def', icon: p.icon2, text: p.def, match: i, article: p.article, termText: p.term });
   });
   // Shuffle
   for (let i = items.length - 1; i > 0; i--) {
@@ -693,7 +693,7 @@ function startMemory() {
   const body = document.getElementById('game-body');
   body.innerHTML = `
     <div class="mem-instructions">
-      En internet, cada dato que compartes tiene un riesgo. Voltea las tarjetas y encuentra las parejas. <strong>¿Sabes qué puede pasar si no proteges tu información?</strong>
+      Cada dato tuyo cuenta algo de quién eres. Encuentra las parejas entre <strong>tus datos personales</strong> y el <strong>riesgo o consecuencia</strong> que pueden traer si los compartes sin cuidado. ¡Piensa antes de elegir!
     </div>
     <div class="memory-grid" id="mem-grid"></div>
     <div id="mem-match-info"></div>
@@ -712,7 +712,10 @@ function renderMemGrid() {
     el.style.position = 'relative';
     el.innerHTML = `
       <div class="mem-card-front">❓</div>
-      <div class="mem-card-back" style="font-size:0.72rem;text-align:center;padding:6px;line-height:1.3">${card.text}</div>
+      <div class="mem-card-back">
+        <span class="mem-card-icon">${card.icon}</span>
+        <span class="mem-card-text">${card.text}</span>
+      </div>
     `;
     if (!isMatched) el.onclick = () => flipMemCard(idx);
     grid.appendChild(el);
@@ -739,16 +742,16 @@ function flipMemCard(idx) {
       document.getElementById('mem-match-info').innerHTML = `
         <div class="mem-pair-label">
           <strong>✅ ¡Pareja encontrada!</strong><br>
-          ${termCard.text} = ${defCard.text}
+          ${termCard.icon} ${termCard.text} = ${defCard.icon} ${defCard.text}
         </div>`;
       showFeedback(true, termCard.article,
-        `${termCard.text} → ${defCard.text}`,
+        `${termCard.icon} ${termCard.text} → ${defCard.icon} ${defCard.text}`,
         () => {
           renderMemGrid();
           if (memMatched.length === memPlayCount) {
             setTimeout(() => completeZone(memPlayCount * 10), 400);
           }
-        });
+        }, termCard.label);
     } else {
       setTimeout(() => {
         memFlipped = [];
@@ -790,7 +793,7 @@ const SEMAFORO_SCENARIOS_POOL = [
   {
     text: "Denuncio una cuenta que difunde acoso u odio hacia una persona.",
     correct: 'verde',
-    article: "COIP, Art. 396 – Acoso: el acoso digital es un delito. Denunciarlo en la plataforma y ante la Fiscalía es un acto de ciudadanía digital responsable.",
+    article: "El acoso digital y los actos de odio (Art. 177 COIP, cuando hay motivación discriminatoria) pueden ser delitos. Denunciarlo en la plataforma y ante la Fiscalía es un acto de ciudadanía digital responsable.",
     explanations: {
       verde: "¡Correcto! Denunciar el acoso protege a la víctima y activa los mecanismos legales. Es una conducta cívica y necesaria.",
       amarillo: "Denunciar no tiene riesgos. Si ves acoso, tienes la responsabilidad de reportarlo.",
@@ -820,7 +823,7 @@ const SEMAFORO_SCENARIOS_POOL = [
   {
     text: "Difundo conversaciones privadas de alguien para exponerlo o humillarlo.",
     correct: 'rojo',
-    article: "COIP, Art. 178 – Violación a la intimidad y Art. 396 – Acoso: difundir conversaciones privadas con intención de dañar combina dos delitos sancionados en Ecuador.",
+    article: "COIP, Art. 178 – Violación a la intimidad: difundir conversaciones privadas sin consentimiento es delito. Si además busca humillar, puede sumarse la contravención de descrédito o deshonra (Art. 396 núm. 1 COIP).",
     explanations: {
       verde: "Exponer conversaciones privadas para humillar es violencia digital. Es un delito con consecuencias penales.",
       amarillo: "Esto va más allá de un riesgo ético: es una conducta ilegal que puede derivar en denuncia formal.",
@@ -850,7 +853,7 @@ const SEMAFORO_SCENARIOS_POOL = [
   {
     text: "Comento en redes sin pensar cómo mis palabras pueden afectar a otra persona.",
     correct: 'amarillo',
-    article: "COIP, Art. 180 – Difamación: comentarios que dañen la reputación de alguien pueden constituir difamación, incluso en redes sociales y aunque sean 'de broma'.",
+    article: "La difamación e injuria ya no son delitos penales en Ecuador desde 2014. Pero comentarios que dañen la reputación de alguien pueden derivar en una contravención por descrédito o deshonra (Art. 396 núm. 1 COIP) o en una demanda civil por daño moral.",
     explanations: {
       verde: "Las palabras en internet tienen peso real. Comentar sin pensar puede causar daño emocional serio.",
       amarillo: "¡Correcto! Riesgo ético. Antes de publicar un comentario, pregúntate: ¿aporta o daña? ¿lo diría en persona?",
@@ -860,7 +863,7 @@ const SEMAFORO_SCENARIOS_POOL = [
   {
     text: "Amenazo o extorsiono a alguien usando información o imágenes digitales.",
     correct: 'rojo',
-    article: "COIP, Art. 173 y Art. 187 – Extorsión: usar información o imágenes para amenazar o chantajear a alguien es uno de los delitos digitales más graves en Ecuador.",
+    article: "COIP, Art. 185 – Extorsión: usar información o imágenes para amenazar o chantajear a alguien, incluso por medios digitales, es uno de los delitos más graves en Ecuador (3 a 5 años de prisión, más si hay agravantes).",
     explanations: {
       verde: "Amenazar o chantajear con información digital es un delito grave con penas de varios años de prisión.",
       amarillo: "Esto no tiene zona gris. La extorsión digital es ilegal y tiene consecuencias penales severas.",
@@ -880,7 +883,7 @@ const SEMAFORO_SCENARIOS_POOL = [
   {
     text: "Instalo una app pirateada que promete funciones premium gratis.",
     correct: 'amarillo',
-    article: "Art. 234 COIP – Ataques a la integridad de sistemas informáticos: estas apps suelen contener programas maliciosos que comprometen tus datos.",
+    article: "Art. 232 COIP – Ataque a la integridad de sistemas informáticos: estas apps suelen contener programas maliciosos que dañan o comprometen tus datos.",
     explanations: {
       verde: "Estas apps suelen contener malware oculto que puede robar tus datos o dañar tu dispositivo.",
       amarillo: "¡Correcto! No siempre es delito instalarla, pero el riesgo de virus y robo de datos es alto.",
@@ -1006,8 +1009,8 @@ const VF_QUESTIONS_POOL = [
   {
     claim: "Un meme con información falsa sobre una persona famosa es inofensivo porque es 'solo humor'.",
     answer: false,
-    article: "Art. 180 COIP – Difamación: difundir información falsa que daña la reputación de alguien, aunque sea en forma de meme o broma, puede constituir un delito.",
-    explanation: "FALSO. Un meme con información falsa puede dañar la reputación de una persona y constituir difamación. El humor no justifica difundir mentiras sobre otras personas."
+    article: "La difamación e injuria no son delitos penales en Ecuador desde 2014, pero un meme con información falsa que daña la reputación de alguien puede derivar en una contravención por descrédito o deshonra (Art. 396 núm. 1 COIP) o en una demanda civil por daño moral. Si además le atribuye falsamente un delito, puede ser Calumnia (Art. 182 COIP).",
+    explanation: "FALSO. Un meme con información falsa puede dañar la reputación de una persona y tener consecuencias legales. El humor no justifica difundir mentiras sobre otras personas."
   },
   {
     claim: "En Ecuador, hacer clic en 'aceptar' en los términos y condiciones de una app significa que leíste y aprobaste cómo usarán tus datos.",
@@ -1336,7 +1339,7 @@ const DILEMMAS_POOL = [
       { text: "Eliminar la foto para que no sigan comentando y no decirle nada a nadie.", type: 'ok', score: 4 },
       { text: "Ignorarlo, porque si no reacciona, los comentarios pararán solos.", type: 'ok', score: 6 },
     ],
-    article: "Art. 396 COIP – Acoso. Ley Orgánica de Educación Intercultural: el ciberacoso escolar debe ser reportado al DECE y puede tener consecuencias legales para quienes lo ejercen.",
+    article: "El ciberacoso escolar debe ser reportado al DECE de tu institución. Según la gravedad, comentarios hirientes reiterados pueden derivar en una contravención por descrédito o deshonra (Art. 396 núm. 1 COIP) y, en estos casos, también es clave la mediación educativa.",
     explanation: "El ciberacoso no desaparece ignorándolo. Lo correcto es reportar, guardar evidencia y buscar apoyo. Responder con insultos puede agravar la situación."
   },
   {
@@ -1364,7 +1367,7 @@ const DILEMMAS_POOL = [
       { text: "Avisar solo a la compañera, sin reportarlo al colegio.", type: 'ok', score: 8 },
       { text: "Guardar la imagen 'por si la piden de evidencia' y compartirla con más amigos.", type: 'risky', score: 0 },
     ],
-    article: "COIP Art. 178 (violación a la intimidad) y Art. 396 (acoso): crear o difundir imágenes falsas (deepfakes) de otra persona, aunque sean generadas por IA, constituye un delito digital grave en Ecuador.",
+    article: "COIP, Art. 178 – Violación a la intimidad: crear o difundir imágenes falsas (deepfakes) de otra persona en situaciones íntimas o comprometedoras, aunque sean generadas por IA, es un delito grave en Ecuador, sin importar que el contenido no sea 'real'.",
     explanation: "Una imagen falsa generada con IA sigue dañando la reputación y dignidad de la persona real. No reenviar, reportar y dar apoyo a la víctima es lo correcto; guardarla o compartirla agrava el daño."
   },
   {
