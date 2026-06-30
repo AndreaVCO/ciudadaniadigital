@@ -33,7 +33,18 @@
 
     /* ====== SCREENS ====== */
     .screen { display: none; min-height: 100vh; }
-    .screen.active { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 20px; }
+    .screen.active {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 20px;
+      animation: screenFadeIn 0.2s ease-out;
+    }
+    @keyframes screenFadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
 
     /* ====== INTRO ====== */
     #screen-intro {
@@ -297,7 +308,7 @@
     .btn-secondary {
       background: transparent;
       border: 2px solid var(--ocean);
-      color: var(--ocean);
+      color: var(--ocean-dark);
       border-radius: 40px;
       padding: 11px 28px;
       font-family: 'Fredoka One', cursive;
@@ -307,6 +318,12 @@
       margin: 4px;
     }
     .btn-secondary:hover { background: var(--ocean); color: white; }
+    /* On dark backgrounds (protocol screen after zone complete) */
+    .protocol-card ~ div .btn-secondary,
+    #game-body > div:last-child .btn-secondary {
+      border-color: var(--ocean);
+      color: var(--ocean-dark);
+    }
 
     /* ====== MEMORY GAME ====== */
     .memory-grid {
@@ -317,6 +334,7 @@
     }
     .mem-card {
       aspect-ratio: 1;
+      min-height: 72px;
       border-radius: 10px;
       cursor: pointer;
       background: var(--ocean);
@@ -327,6 +345,7 @@
       transition: transform 0.3s;
       transform-style: preserve-3d;
       border: 3px solid rgba(255,255,255,0.3);
+      position: relative;
     }
     .mem-card.flipped { transform: rotateY(180deg); }
     .mem-card-front, .mem-card-back {
@@ -526,6 +545,7 @@
       background: linear-gradient(180deg, #062541 0%, #0d4d7a 60%, #1a6ea8 100%);
       justify-content: center;
       text-align: center;
+      padding: 24px 20px;
     }
     .chest-wrap { position: relative; width: 190px; max-width: 70vw; height: 130px; margin: 0 auto 8px; }
     .chest-mouth { position: absolute; left: 50%; top: 38%; width: 1px; height: 1px; }

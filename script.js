@@ -73,7 +73,6 @@ function loadState() {
     }
   } catch(e){}
 }
-loadState();
 
 // =================== NAVIGATION ===================
 function showScreen(id) {
@@ -401,14 +400,15 @@ function animateCellByCell(fromIdx, toIdx, callback) {
   if (fromIdx >= toIdx) { callback(); return; }
 
   let current = fromIdx;
+  let cancelled = false;
 
   function step() {
+    if (cancelled) return;
     current++;
     const pos  = getCellPos(current);
     const char = document.getElementById('map-character');
-    if (!char) { callback(); return; }
+    if (!char) { cancelled = true; callback(); return; }
 
-    // Mover el grupo SVG actualizando el atributo transform
     char.setAttribute('transform', `translate(${pos.x},${pos.y - 52})`);
 
     if (current >= toIdx) {
@@ -1201,6 +1201,9 @@ function renderDnD() {
             </div>
           </div>`).join('')}
       </div>
+      <div id="dnd-warn" style="display:none;background:#fde8e6;border:2px solid #c0392b;border-radius:10px;padding:10px 14px;font-size:0.88rem;color:#c0392b;font-weight:700;text-align:center;margin-top:8px">
+        ⚠️ Aún hay tarjetas sin clasificar. ¡Arrástralas todas antes de verificar!
+      </div>
       <button class="dnd-check-btn" onclick="checkDnD()">Verificar clasificación ✓</button>
     </div>
   `;
@@ -1244,7 +1247,12 @@ document.addEventListener('touchend', function(e) {
 function checkDnD() {
   const inPool = dndItems.filter(i => dndPlaced[i.id]==='pool');
   if (inPool.length > 0) {
-    alert('Aún hay tarjetas sin clasificar. ¡Arrástralas todas!');
+    // Show inline warning instead of alert()
+    const warn = document.getElementById('dnd-warn');
+    if (warn) {
+      warn.style.display = 'block';
+      setTimeout(() => { warn.style.display = 'none'; }, 3000);
+    }
     return;
   }
   let correct = 0;
@@ -1461,6 +1469,8 @@ function answerDilemma(idx) {
 document.addEventListener('DOMContentLoaded', () => {
   loadState();
   if (state.completed && state.completed.length > 0) {
-    renderMap();
+    showMap();
+  } else {
+    showScreen('screen-intro');
   }
 });
