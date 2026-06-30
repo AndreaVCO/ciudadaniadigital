@@ -1077,7 +1077,7 @@ function renderSemaforo() {
       .sem2-counter {
         text-align: center;
         font-size: 0.78rem;
-        color: #888;
+        color: #fff;
         margin-bottom: 4px;
       }
     </style>
@@ -1210,16 +1210,16 @@ function renderVF() {
   const q = vfQuestions[vfIdx];
   const body = document.getElementById('game-body');
   body.innerHTML = `
-    <div style="font-size:0.82rem;color:#666;margin-bottom:6px">Pregunta ${vfIdx+1} de ${vfQuestions.length}</div>
+    <div style="font-size:0.82rem;color:#fff;margin-bottom:6px;text-align:center">Pregunta ${vfIdx+1} de ${vfQuestions.length}</div>
     <div class="tf-card">
-      <div style="font-size:2rem">🔍</div>
+      <img src="imagenc.png" alt="Verdadero o Falso" style="width:100%;max-width:420px;display:block;margin:0 auto 16px;border-radius:10px"/>
       <div class="tf-claim">${q.claim}</div>
       <div class="tf-btns">
         <button class="tf-btn tf-true" onclick="answerVF(true)">✅ Verdadero</button>
         <button class="tf-btn tf-false" onclick="answerVF(false)">❌ Falso</button>
       </div>
     </div>
-    <div style="font-size:0.82rem;color:#666;text-align:center">Analiza bien la afirmación antes de responder.</div>
+    <div style="font-size:0.82rem;color:#fff;text-align:center">Analiza bien la afirmación antes de responder.</div>
   `;
 }
 
