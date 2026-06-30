@@ -1460,7 +1460,5 @@ function answerDilemma(idx) {
 // =================== INIT ===================
 document.addEventListener('DOMContentLoaded', () => {
   loadState();
-  if (state.completed && state.completed.length > 0) {
-    renderMap();
-  }
+  showScreen('screen-intro');
 });
