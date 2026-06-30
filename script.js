@@ -695,7 +695,9 @@ function startMemory() {
     <div class="mem-instructions">
       Cada dato tuyo cuenta algo de quién eres. Encuentra las parejas entre <strong>tus datos personales</strong> y el <strong>riesgo o consecuencia</strong> que pueden traer si los compartes sin cuidado. ¡Piensa antes de elegir!
     </div>
-    <div class="memory-grid" id="mem-grid"></div>
+    <div class="mem-board-bg">
+      <div class="memory-grid" id="mem-grid"></div>
+    </div>
     <div id="mem-match-info"></div>
   `;
   renderMemGrid();
