@@ -339,7 +339,16 @@
       backface-visibility: hidden;
     }
     .mem-card-front { background: var(--ocean); color: white; font-size: 1.4rem; }
-    .mem-card-back { background: var(--yellow-light); transform: rotateY(180deg); font-size: 1.5rem; }
+    .mem-card-back {
+      background: var(--yellow-light);
+      transform: rotateY(180deg);
+      flex-direction: column;
+      gap: 4px;
+      padding: 6px;
+      text-align: center;
+    }
+    .mem-card-icon { font-size: 2.4rem; line-height: 1; }
+    .mem-card-text { font-size: 0.7rem; line-height: 1.25; color: var(--ocean-dark); font-weight: 700; }
     .mem-card.matched .mem-card-front { background: var(--green-light); }
     .mem-instructions {
       background: var(--ocean-light);
